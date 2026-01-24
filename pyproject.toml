@@ -1,0 +1,51 @@
+[project]
+name = "raw-rpl-tools"
+version = "0.1.0"
+description = "User interface to manipulate RAW RPL (Ripple) file pairs of MA-XRF spectral data"
+authors = [
+    {name = "Lars Maxfield",email = "83759569+larsmaxfield@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.14, <3.15"
+dependencies = [
+    "numpy (>=2.4, <3)",
+    "pypng (>=0.20220715.0,<0.20220716.0)"
+]
+
+[tool.poetry]
+packages = [
+    {include = "raw_rpl_tools", from = "src"},
+    {include = "maxrf4u_lite", from = "src"},
+]
+
+[tool.ruff.lint]
+preview = true
+select = [
+    "E4", "E7", "E9", "F",  # ruff defaults
+    "E2",  # spaces
+    "E3",  # blank lines
+    "E5",  # line-length
+    "D",  # docstring
+    "W",  # whitespace (blank line with whitespace, trailing whitespace)
+    "ANN",  # annotation (type hints et al.)
+]
+ignore = [
+    # Do not require class __init__ docstring; use class docstring instead.
+    "D107",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# "!vg/**" = ["ALL"]  # Only check ./vg, ignore everything else
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.14.14,<0.15.0)",
+    "pyinstaller (>=6,<7)",
+]
