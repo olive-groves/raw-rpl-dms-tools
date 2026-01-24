@@ -1,0 +1,50 @@
+# RAW RPL Tools
+
+User interface to preview and rotate RAW RPL (Ripple) file pairs of MA-XRF spectral data.
+
+Built with Python and a modified, stripped-down version of [`maxrf4u`](https://github.com/fligt/maxrf4u) package by [Frank Ligterink](https://github.com/fligt).
+
+Available for macOS and Windows at just under 20 MB.
+
+TODO: Screenshot
+
+
+## TODO: Download and run
+
+### Windows
+
+### macOS
+
+
+## TODO: Features
+
+### Preview
+
+### Rotate
+
+## TODO: Developers
+
+RAW RPL Tools runs on Python 3.14 with a just a couple [dependencies](#dependencies).
+
+### Dependencies
+
+### Install
+
+```bash
+poetry install
+```
+
+### Windows executable
+
+### macOS package
+
+```bash
+cd src/raw_rpl_tools
+pyinstaller --onefile --windowed script.py -y 
+```
+
+
+## TODO: Avoid Windows Defender SmartScreen
+
+## TODO: Credits
+
