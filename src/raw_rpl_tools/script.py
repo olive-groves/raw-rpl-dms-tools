@@ -1,11 +1,7 @@
 """Test script."""
 
-import os
 import tkinter as tk
 from pathlib import Path
-
-import numpy as np
-import png
 
 from maxrf4u_lite.storage import make_raw_preview, rot90_raw_rpl
 
@@ -15,8 +11,13 @@ rpl_filepath: Path = Path(f'{base}.rpl')
 # output: Path = Path('/Users/max/Developer/data/')
 output_dirpath = None
 
-# make_raw_preview(raw, rpl, output, show=True, save=True, verbose=True)
-rot90_raw_rpl(raw_filepath, rpl_filepath, output_dirpath, 0)
+# make_raw_preview(raw_filepath, rpl_filepath, show=True)
+
+rot_raw_filepath, rot_rpl_filepath = (
+    rot90_raw_rpl(raw_filepath, rpl_filepath, output_dirpath, 3, 'x')
+)
+make_raw_preview(rot_raw_filepath, rot_rpl_filepath, show=True)
+
 
 # # Create the main window
 # root = tk.Tk()

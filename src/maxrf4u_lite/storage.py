@@ -6,12 +6,16 @@ maxrf4u Copyright (c) 2026 Frank Ligterink with changes by Lars Maxfield
 import os
 import platform
 import subprocess
-import re
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 
 import png
+
+# 'w' open for writing, truncating the file first
+# 'x' open for exclusive creation, failing if the file already exists
+WriteMode = Literal['w', 'x']
 
 # # # CONSTANTS
 # # DATASTACK_EXT = '.datastack'
@@ -302,25 +306,16 @@ def make_raw_preview(
     show: bool = False,
     save: bool = True,
     verbose: bool = False,
-):
-    """Create preview image of raw file to inspect scan orientation."""
+) -> Path | None:
+    """Create single-channel 8-bit PNG of raw file to preview scan orientation."""
     if output_dir is not None and not output_dir.exists():
         raise FileNotFoundError(f"Folder does not exist at {output_dir}.")
 
     # read data cube shape and dtype from .rpl file
-    dtype, shape = parse_rpl(rpl_filepath, verbose=verbose)
+    dtype, shape = parse_rpl_keys(read_rpl(rpl_filepath, verbose=verbose))
 
     # create numpy memory map
     raw_mm = np.memmap(raw_filepath, dtype=dtype, mode='r', shape=shape)
-
-    # rotate
-    angle = 270
-    nrots = angle // 90 % 4
-    raw_mm = np.rot90(raw_mm, k=nrots).copy()
-    shape = (shape[1], shape[0], shape[2])
-
-    # TODO: Swap RPL width and height
-    # TODO: Save RPL
 
     # create max-spectrum
     raw_flat = raw_mm.reshape([-1, shape[2]])
@@ -337,61 +332,84 @@ def make_raw_preview(
 
     if output_dir is None:
         # save in same folder
-        preview_file = raw_filepath.with_suffix(suffix)
+        preview_filepath = raw_filepath.with_suffix(suffix)
     else:
         # save in output folder
         name = raw_filepath.with_suffix(suffix).name
-        preview_file = output_dir / name
+        preview_filepath = output_dir / name
 
     if save:
-        print(f'Saving: {preview_file}...')
-        png.from_array(raw_preview.astype(np.int8), mode='L;8').save(preview_file)
+        print(f'Saving: {preview_filepath}...')
+        png.from_array(raw_preview.astype(np.int8), mode='L;8').save(preview_filepath)
 
     if show:
-        print(f'Showing file')
-        open_system_default(preview_file)
+        print(f'Showing file: {preview_filepath}')
+        open_system_default(preview_filepath)
 
-    # return raw_preview
-    return
+    return preview_filepath
 
 
 def rot90_raw_rpl(
     raw_filepath: Path,
     rpl_filepath: Path,
     output_dir: Path | None = None,
-    k: int = 1,
+    n: int = 1,
+    mode: WriteMode = 'x'
 ) -> tuple[Path, Path]:
-    """Rotate and save a RAW and RPL by k×90 degrees."""
+    """Rotate and save a RAW and RPL by n×90 degrees."""
     if output_dir is not None and not output_dir.exists():
         raise FileNotFoundError(f"Folder does not exist at {output_dir}.")
 
     if output_dir is None:
         output_dir = raw_filepath.parent
 
-    angle = k * 90 % 360
-    append = f".rotated.{angle}deg"
+    angle = n * 90 % 360
+    append = f"_rot{angle}"
 
-    raw_rot_file: Path = output_dir / (raw_filepath.stem + append + raw_filepath.suffix)
-    rpl_rot_file: Path = output_dir / (rpl_filepath.stem + append + rpl_filepath.suffix)
+    rot_raw_filepath: Path = (
+        output_dir / (raw_filepath.stem + append + raw_filepath.suffix)
+    )
+    rot_rpl_filepath: Path = (
+        output_dir / (rpl_filepath.stem + append + rpl_filepath.suffix)
+    )
 
-    # Rotate that RPL
-    keys_and_values = read_rpl(rpl_filepath)
+    keys = read_rpl(rpl_filepath)
+    dtype, shape = parse_rpl_keys(keys)
+    raw_mm = np.memmap(raw_filepath, dtype=dtype, mode='r', shape=shape)
 
-    # Rotate that RAW
-    # save to
+    # Rotate RPL
+    if n % 2:  # Switch height and width if 90, 270, ...
+        height = keys["height"]["value"]
+        keys["height"]["value"] = keys["width"]["value"]
+        keys["width"]["value"] = height
+    write_rpl(keys, rot_rpl_filepath, mode)
 
-    return raw_rot_file, rpl_rot_file
+    # Rotate RAW
+    rot_raw_mm = np.rot90(raw_mm, k=n)
+    rot_shape = rot_raw_mm.shape
+    if rot_raw_filepath.exists() and mode != 'w':
+        raise FileExistsError(f'RAW file already exists: {rot_raw_filepath}.')
+    out = np.memmap(rot_raw_filepath, dtype=dtype, mode='w+', shape=rot_shape)
+
+    # Go by chunk instead of all at once.
+    # out[:] = rot_raw_mm[:]
+    chunk_size = 1
+    total_rows = rot_shape[0]
+    for i in range(0, total_rows, chunk_size):
+        sl = slice(i, min(i + chunk_size, total_rows))
+        data_chunk = rot_raw_mm[sl]
+        out[sl] = data_chunk
+        out.flush()
+
+    return rot_raw_filepath, rot_rpl_filepath
 
 
-def parse_rpl(
-        rpl_filepath: Path, verbose: bool = False) -> tuple[str, tuple[int, int, int]]:
-    """Read .rpl shape file and return shape and dtype."""
-    keys_and_values = read_rpl(rpl_filepath)
-
-    width = int(keys_and_values['width'])
-    height = int(keys_and_values['height'])
-    depth = int(keys_and_values['depth'])
-    nbytes = int(keys_and_values['data-length'])
+def parse_rpl_keys(keys: dict) -> tuple[str, tuple[int, int, int]]:
+    """Parse the keys of an RPL in the return format of `read_rpl()`."""
+    width = int(keys['width']['value'])
+    height = int(keys['height']['value'])
+    depth = int(keys['depth']['value'])
+    nbytes = int(keys['data-length']['value'])
 
     dtype = f'uint{nbytes * 8}'
     shape = (height, width, depth)
@@ -400,24 +418,29 @@ def parse_rpl(
 
 
 def read_rpl(filepath: Path, verbose: bool = False) -> dict:
-    """Read a RPL as dict of dicts of each lowercase key.
+    """Read a RPL as a dict of dicts of each lowercase key, preserving case and spaces.
+
+    Includes the first line 'key value' as a key.
+
+    All values kept str.
 
     Per https://pages.nist.gov/NeXLSpectrum.jl/methods/.
 
+    ```
     {
-        "key": {
-            "key": "keY",
-            "space": "    ",
-            "value": "value",
-        }
-        "width": {  # lowercase
-            "key": "wIdtH",  # preserved case
-            "space": "     ",  # preserved space
-            "value": 849,
+        'key': {
+            'key': 'keY',
+            'spaces': '    ',
+            'value': 'value',
+        },
+        'width': {  # lowercase
+            'key': 'wIdtH',  # preserved case
+            'spaces': '     ',  # preserved spaces
+            'value': '849',
         },
         ...
     }
-    
+    ```
     """
     # read data cube shape from .rpl file
     with open(filepath, 'r') as fh:
@@ -428,15 +451,33 @@ def read_rpl(filepath: Path, verbose: bool = False) -> dict:
         for line in lines:
             print(line, end='\r')
 
-    # get rid of spaces and newline characters
-    keys_and_values = dict(
-        [re.sub(' |\n', '', line).split('\t') for line in lines]
-    )
+    keys: dict = {}
+    tab_space: str = '\t '
+    for line in lines:
+        [key_spaces, value_newline] = line.split(tab_space)
+        [key, first_space, other_spaces] = key_spaces.partition(' ')
+        [value, _] = value_newline.split('\n')
+        keys[key.lower()] = {
+            "key": key,
+            "spaces": first_space + other_spaces,
+            "value": value,
+        }
 
-    return keys_and_values
+    return keys
 
-# def write_rpl(rpl: dict, filepath: Path) -> None:
-#     """Write a RPL from key-value pairs."""
+
+def write_rpl(rpl: dict, filepath: Path, mode: WriteMode = 'x') -> None:
+    """Write a case-sensitive RPL from a dict of nested dicts by key (`read_rpl`)."""
+    tab_space: str = '\t '
+    newline: str = '\n'
+    lines = [
+        k["key"] + k["spaces"] + tab_space + k["value"] + newline for k in rpl.values()
+    ]
+    string = ''.join(lines)
+    with open(filepath, mode) as f:
+        f.write(string)
+
+    return None
 
 
 # # class DataStack:
