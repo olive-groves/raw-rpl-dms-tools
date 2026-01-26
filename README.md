@@ -34,7 +34,13 @@ RAW RPL Tools runs on Python 3.14 with a just a couple [dependencies](#dependenc
 poetry install
 ```
 
+
+
 ### Windows executable
+
+```
+pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_tools --icon=icon.ico --add-data=C:\art\raw-rpl-tools\src\raw_rpl_tools\icon.ico:. .\main.py
+```
 
 ### macOS package
 
