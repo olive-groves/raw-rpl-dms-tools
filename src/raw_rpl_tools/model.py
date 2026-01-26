@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from raw_rpl_tools.signaler import Signaler
-
+from maxrf4u_lite.storage import make_raw_preview, rot90_raw_rpl
 
 PathOrNone = Path | None
 
@@ -66,3 +66,11 @@ class RawRplModel(Signaler):
     def overwrite(self, overwrite: bool) -> None:
         self._overwrite = overwrite
         self._signal(overwrite)
+
+    def generate_preview(self):
+        # TODO: Overwrite?
+        make_raw_preview(
+            self.raw_filepath,
+            self.rpl_filepath,
+            show=True
+        )

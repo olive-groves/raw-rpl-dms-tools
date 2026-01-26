@@ -1,6 +1,9 @@
 """Utilities for tkinter, including a Tooltip."""
 
+from typing import Literal
 import tkinter as tk
+
+from tkinter import font
 
 
 class Tooltip:
@@ -156,3 +159,28 @@ class Tooltip:
         if tw:
             tw.destroy()
         self.tw = None
+
+
+class LabelText(tk.Text):
+    """tk.Text styled as tk.Label with selectable, copyable text."""
+    def __init__(
+        self,
+        *args,
+        window: tk.Tk,
+        text: str,
+        justify: Literal["left", "right"] = "left",
+        **kwargs
+    ) -> None:
+        super().__init__(window, *args, height=1, **kwargs)
+        self.set_text(text)
+        self.configure(font=font.nametofont('TkTextFont'))
+        self.configure(bg=window.cget('bg'), relief="flat")
+        self.configure(state="disabled")
+        self.tag_configure('tag-justify', justify=justify)
+        self.configure(cursor="arrow")  # No mouse cursor
+
+    def set_text(self, text: str):
+        self.configure(state="normal")
+        self.delete(1.0, "end")
+        self.insert(1.0, text, 'tag-justify')
+        self.configure(state="disabled")
