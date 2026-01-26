@@ -19,7 +19,7 @@ class RawRplView(tk.Frame):
         super().__init__(master=window)
         self.model = model
 
-        rows = 2
+        rows = 4
         cols = 0
 
         window.grid_rowconfigure(rows, weight=1)
@@ -38,17 +38,22 @@ class RawRplView(tk.Frame):
         row += 1
         self.draw_header(row)
 
-        # Draw Open buttons
+        # Draw Select buttons
         row += 1
         self.draw_select_buttons(row=row)
 
+        # Draw Separator
         row += 1
         separator = ttk.Separator(window, orient='horizontal')
         separator.grid(
-            sticky="new",
+            sticky="ew",
             column=0, row=row,
             padx=self._pad, pady=self._pad,
         )
+
+        # Draw Generate preview button
+        row += 1
+        self.draw_preview_button(row=row)
 
         # TODO:
         # "Save as rotated copy"
@@ -79,6 +84,20 @@ class RawRplView(tk.Frame):
 
         return
 
+    def select_rpl_via_dialog(self) -> None:
+        """Trigger an Open File dialog to select and set the RPL filepath."""
+        if existing_path := self.model.rpl_filepath:
+            initial_path = str(existing_path)
+        else:
+            initial_path = ""
+
+        file = self.open_file_dialog(initial_path, "Select RPL file")
+
+        if file:
+            self.set_rpl_filepath(Path(file))
+
+        return
+
     def open_file_dialog(
         self,
         initial_path: str = "",
@@ -91,6 +110,46 @@ class RawRplView(tk.Frame):
             initialdir=initial_path
         )
         return file
+
+    def draw_preview_button(self, row: int) -> None:
+        """Draw the generate preview button."""
+        frame = tk.Frame(master=self._window)
+        frame.grid(
+            sticky="ew",
+            column=0, row=row,
+            padx=(0, 0), pady=(0, 0),
+        )
+        frame.grid_rowconfigure(0, weight=0)
+        frame.grid_columnconfigure(0, weight=0)
+        frame.grid_columnconfigure(1, weight=1)
+
+        row = -1
+
+        # Generate preview
+        row += 1
+        col = 0
+        text = "Generate preview image"
+        button = ttk.Button(
+            frame,
+            text=text,
+            command=self.generate_preview,
+        )
+        button.grid(
+            sticky="we",
+            column=col, row=row,
+            padx=self._pad, pady=0,
+        )
+        Tooltip(button, text="Generate a preview PNG image from the RAW-RPL pair.")
+
+        col = 1
+        label = ttk.Label(frame, text="")
+        label.grid(
+            sticky="w",
+            column=col, row=row,
+            padx=self._pad, pady=0,
+        )
+        self.generate_preview_label = label
+        return
 
     def draw_select_buttons(self, row: int) -> None:
         """Draw the select RAW and select RPL buttons."""
@@ -117,7 +176,7 @@ class RawRplView(tk.Frame):
         )
         button.grid(
             sticky="we",
-            column=col, row=0,
+            column=col, row=row,
             padx=self._pad, pady=0,
         )
         Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
@@ -138,7 +197,7 @@ class RawRplView(tk.Frame):
         button = ttk.Button(
             frame,
             text=text,
-            command=lambda: self.clicked_open_directory,
+            command=self.select_rpl_via_dialog,
         )
         button.grid(
             sticky="we",
@@ -157,6 +216,7 @@ class RawRplView(tk.Frame):
             column=col, row=row,
             padx=self._pad, pady=0,
         )
+        self.rpl_label = label
         return
 
     def draw_header(self, row: int) -> None:
@@ -250,6 +310,31 @@ class RawRplView(tk.Frame):
             path=path,
             prefix="RAW file"
         )
+
+    def rpl_filepath_listener(self, path: Path) -> None:
+        """Listener for rpl_filepath."""
+        self.rpl_label.config(text=str(path))
+        return
+
+    def set_rpl_filepath(self, path: PathOrNone) -> None:
+        """Set the RPL filepath of the model."""
+        self._set_path(
+            property_=RawRplModel.rpl_filepath,
+            # notify=self.h5_file_notify,
+            path=path,
+            prefix="RPL file"
+        )
+
+    def generate_preview(self) -> PathOrNone:
+        """Generate a preview with the model."""
+        # Check if RAW and RPL set!
+        # No? Error time ;)
+
+        # try:
+        #     self.model.generate
+        # except Exception as e:
+        #     showerror()>
+        raise NotImplementedError()
 
 
 def show_about(window: tk.Tk) -> None:
