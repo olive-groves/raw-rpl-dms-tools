@@ -306,6 +306,7 @@ def make_raw_preview(
     show: bool = False,
     save: bool = True,
     verbose: bool = False,
+    overwrite: bool = False,
 ) -> Path | None:
     """Create single-channel 8-bit PNG of raw file to preview scan orientation."""
     if output_dir is not None and not output_dir.exists():
@@ -337,6 +338,9 @@ def make_raw_preview(
         # save in output folder
         name = raw_filepath.with_suffix(suffix).name
         preview_filepath = output_dir / name
+
+    if not overwrite and preview_filepath.exists():
+        raise FileExistsError(f"Preview image already exists:\n\n{preview_filepath}")
 
     if save:
         print(f'Saving: {preview_filepath}...')

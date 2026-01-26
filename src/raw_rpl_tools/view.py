@@ -84,6 +84,7 @@ class RawRplView(tk.Frame):
 
         if file:
             self.set_raw_filepath(Path(file))
+            self.generate_preview_listener(None)
 
         return
 
@@ -98,6 +99,7 @@ class RawRplView(tk.Frame):
 
         if file:
             self.set_rpl_filepath(Path(file))
+            self.generate_preview_listener(None)
 
         return
 
@@ -302,7 +304,8 @@ class RawRplView(tk.Frame):
 
     def raw_filepath_listener(self, path: Path) -> None:
         """Listener for raw_filepath."""
-        self.raw_label.set_text(text=str(path))
+        text = str(path or "")
+        self.raw_label.set_text(text=text)
         return
 
     def set_raw_filepath(self, path: PathOrNone) -> None:
@@ -316,7 +319,8 @@ class RawRplView(tk.Frame):
 
     def rpl_filepath_listener(self, path: Path) -> None:
         """Listener for rpl_filepath."""
-        self.rpl_label.set_text(text=str(path))
+        text = str(path or "")
+        self.rpl_label.set_text(text=text)
         return
 
     def set_rpl_filepath(self, path: PathOrNone) -> None:
@@ -328,6 +332,12 @@ class RawRplView(tk.Frame):
             prefix="RPL file"
         )
 
+    def generate_preview_listener(self, path: PathOrNone) -> None:
+        """Listener for generate_preview."""
+        text = str(path or "")
+        self.generate_preview_label.set_text(text=text)
+        return
+
     def generate_preview(self) -> PathOrNone:
         """Generate a preview with the model."""
         # Check if RAW and RPL set!
@@ -338,13 +348,22 @@ class RawRplView(tk.Frame):
         # except Exception as e:
         #     showerror()>
         # raise NotImplementedError()
+        error = None
+        filepath = None
         try:
-            self.model.generate_preview()
+            filepath = self.model.generate_preview()
+        except FileExistsError as e:
+            error = str(e)
         except Exception as e:
-            messagebox.showerror(
-                self._window.title(),
-                f"Error while generating preview:\n\n{e}",
-            )
+            error = f"Error while generating preview:\n\n{e}"
+        finally:
+            if error:
+                messagebox.showerror(self._window.title(), error)
+            elif filepath:
+                messagebox.showinfo(
+                    self._window.title(),
+                    f"Preview generated:\n\n{filepath}",
+                )
         return
 
 

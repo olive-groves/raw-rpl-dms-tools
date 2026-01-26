@@ -68,9 +68,10 @@ class RawRplModel(Signaler):
         self._signal(overwrite)
 
     def generate_preview(self):
-        # TODO: Overwrite?
-        make_raw_preview(
+        # TODO: Check RAW, RPL exist
+        filepath = make_raw_preview(
             self.raw_filepath,
             self.rpl_filepath,
             show=True
         )
+        self._signal(filepath)
