@@ -6,6 +6,7 @@ from platform import system
 import tkinter as tk
 
 from raw_rpl_tools.metadata import TITLE
+from raw_rpl_tools.model import RawRplModel
 from raw_rpl_tools.view import RawRplView
 
 
@@ -30,7 +31,9 @@ def main() -> None:
             print(f"Unexpected error while setting icon: {e}. Continuing without icon.")
             pass
 
-    app = RawRplView(window=window, overwrite=False)
+    model = RawRplModel()
+    app = RawRplView(window=window, model=model)
+    model.observers.append(app)
     app.mainloop()
 
 
