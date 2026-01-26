@@ -48,3 +48,8 @@ pyinstaller --onefile --windowed script.py -y
 
 ## TODO: Credits
 
+Created by Lars Maxfield
+
+maxrf4u Copyright (c) 2026 Frank Ligterink with modifications by Lars Maxfield
+
+[Icon](https://icon-icons.com/icon/atom/96146) by [Good Stuff Non Sense](https://goodstuffnononsense.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
