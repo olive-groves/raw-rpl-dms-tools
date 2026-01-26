@@ -6,11 +6,18 @@ authors = [
     {name = "Lars Maxfield",email = "83759569+larsmaxfield@users.noreply.github.com"}
 ]
 readme = "README.md"
+license = "MIT"
+license-files = [
+    "LICEN[CS]E",
+]
 requires-python = ">=3.14, <3.15"
 dependencies = [
     "numpy (>=2.4, <3)",
     "pypng (>=0.20220715.0,<0.20220716.0)"
 ]
+
+[project.urls]
+Homepage = "https://github.com/olive-groves/raw-rpl-tools"
 
 [tool.poetry]
 packages = [
