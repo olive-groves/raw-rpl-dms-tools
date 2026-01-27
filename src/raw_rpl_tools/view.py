@@ -247,6 +247,30 @@ class RawRplView(tk.Frame):
 
         row = -1
 
+        # RAW file
+        row += 1
+        col = 0
+        text = "Select RAW file..."
+        button = ttk.Button(
+            frame,
+            text=text,
+            command=self.select_raw_via_dialog,
+        )
+        button.grid(
+            sticky="we",
+            column=col, row=row,
+            padx=self._pad, pady=0,
+        )
+        Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
+        col = 1
+        label = LabelText(window=frame, text="No RAW file selected", justify="left")
+        label.grid(
+            sticky="w",
+            column=col, row=row,
+            padx=self._pad, pady=0,
+        )
+        self.raw_label = label
+
         # RPL file
         row += 1
         col = 0
@@ -274,29 +298,6 @@ class RawRplView(tk.Frame):
         )
         self.rpl_label = label
 
-        # RAW file
-        row += 1
-        col = 0
-        text = "Select RAW file..."
-        button = ttk.Button(
-            frame,
-            text=text,
-            command=self.select_raw_via_dialog,
-        )
-        button.grid(
-            sticky="we",
-            column=col, row=row,
-            padx=self._pad, pady=0,
-        )
-        Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
-        col = 1
-        label = LabelText(window=frame, text="No RAW file selected", justify="left")
-        label.grid(
-            sticky="w",
-            column=col, row=row,
-            padx=self._pad, pady=0,
-        )
-        self.raw_label = label
         return
 
     def draw_header(self, row: int) -> None:
