@@ -14,7 +14,7 @@ def main() -> None:
     """Main window."""
     window = tk.Tk()
     window.title(f"{TITLE}")
-    window.geometry('480x360')
+    window.geometry('320x360')
 
     # Set icon based on operating system
     platformD = system()

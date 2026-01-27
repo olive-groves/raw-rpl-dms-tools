@@ -19,16 +19,14 @@ class RawRplView(tk.Frame):
         super().__init__(master=window)
         self.model = model
 
-        # rows = 4  # TODO: Confirm row configuration at end is OK.
-        cols = 0
-
-        # window.grid_rowconfigure(rows, weight=1)
-        window.grid_columnconfigure(cols, weight=1)
+        window.grid_rowconfigure(0, weight=1)
+        window.grid_columnconfigure(0, weight=1)
         self._window = window
 
-        self.grid()
-        # self.grid_rowconfigure(rows, weight=1)
-        self.grid_columnconfigure(cols, weight=1)
+        self.grid(
+            sticky="new",
+        )
+        self.grid_columnconfigure(0, weight=1)
 
         self._pad = (5, 5)
 
@@ -38,15 +36,6 @@ class RawRplView(tk.Frame):
         row += 1
         self.draw_header(row)
 
-        # # Draw Separator
-        # row += 1
-        # separator = ttk.Separator(window, orient='horizontal')
-        # separator.grid(
-        #     sticky="ew",
-        #     column=0, row=row,
-        #     padx=self._pad, pady=(0, self._pad[0]),
-        # )
-
         # Draw Select buttons
         row += 1
         self.draw_select_buttons(row=row)
@@ -55,21 +44,26 @@ class RawRplView(tk.Frame):
         row += 1
         self.draw_preview_button(row=row)
 
-        # # Draw Separator
-        # row += 1
-        # separator = ttk.Separator(window, orient='horizontal')
-        # separator.grid(
-        #     sticky="ew",
-        #     column=0, row=row,
-        #     padx=self._pad, pady=self._pad,
-        # )
+        # Draw Separator
+        row += 1
+        separator = ttk.Separator(self, orient='horizontal')
+        separator.grid(
+            sticky="ew",
+            column=0, row=row,
+            padx=self._pad, pady=self._pad,
+        )
 
         # Draw Rotation
         row += 1
-        self.draw_rotation_buttons(row=row)
+        self.draw_transform_buttons(row=row)
 
-        # Finally, set last + 1 row as expander
-        self.grid_rowconfigure(row + 1, weight=1)
+        row += 1
+        label = tk.Label(self, text="·")
+        label.grid(
+            sticky="s",
+            column=0, row=row,
+        )
+        self.grid_rowconfigure(row - 1, weight=1)
 
         # TODO:
         # "Save as rotated copy"
@@ -131,11 +125,11 @@ class RawRplView(tk.Frame):
 
     def draw_preview_button(self, row: int) -> None:
         """Draw the generate preview button."""
-        frame = tk.Frame(master=self._window)
+        frame = tk.Frame(master=self)
         frame.grid(
             sticky="ew",
             column=0, row=row,
-            padx=(0, 0), pady=(0, 0),
+            padx=self._pad, pady=0,
         )
         frame.grid_rowconfigure(0, weight=0)
         frame.grid_columnconfigure(0, weight=1)
@@ -144,13 +138,12 @@ class RawRplView(tk.Frame):
         row = -1
 
         row += 1
-
         col = 0
         label = LabelText(window=frame, text="", justify="right")
         label.grid(
             sticky="e",
             column=col, row=row,
-            padx=self._pad, pady=0,
+            padx=0, pady=0,
         )
         self.generate_preview_label = label
 
@@ -164,7 +157,7 @@ class RawRplView(tk.Frame):
         button.grid(
             sticky="we",
             column=col, row=row,
-            padx=self._pad, pady=0,
+            padx=(self._pad[0], 0), pady=0,
         )
         Tooltip(
             button,
@@ -175,37 +168,34 @@ class RawRplView(tk.Frame):
         )
         return
 
-    def draw_rotation_buttons(self, row: int) -> None:
-        transform_frame = tk.LabelFrame(master=self._window, text="Transform")
+    def draw_transform_buttons(self, row: int) -> None:
+        transform_frame = tk.Frame(master=self)
         transform_frame.grid(
             sticky="ew",
             column=0, row=row,
-            padx=self._pad, pady=self._pad,
+            padx=self._pad, pady=0,
         )
         transform_frame.grid_rowconfigure(1, weight=1)
         transform_frame.grid_columnconfigure(0, weight=1)
+        transform_row = -1
 
-        text = "Transform & Save As Copy"
-        button = ttk.Button(
-            transform_frame,
-            text=text,
-            # command=self.generate_preview,
-        )
-        button.grid(
-            sticky="we",
-            column=0, row=1,
-            padx=self._pad, pady=self._pad,
+        transform_row += 1
+        label = tk.Label(master=transform_frame, text="Transform")
+        label.grid(
+            sticky="w",
+            column=0, row=transform_row,
+            padx=0, pady=0,
         )
 
+        transform_row += 1
         frame = tk.LabelFrame(master=transform_frame, text="Rotate")
         frame.grid(
             sticky="ew",
-            column=0, row=0,
-            padx=self._pad, pady=self._pad,
+            column=0, row=transform_row,
+            padx=self._pad, pady=(0, self._pad[1]),
         )
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
-
         row = -1
 
         rotations = {
@@ -233,13 +223,47 @@ class RawRplView(tk.Frame):
                 command=lambda x=self.variable: print(x.get()),
             ).grid(sticky="w", column=0, row=row)
 
+        transform_row += 1
+        frame = tk.Frame(master=transform_frame,)
+        frame.grid(
+            sticky="ew",
+            column=0, row=transform_row,
+            padx=0, pady=0,
+        )
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+        row = -1
+
+        row += 1
+        col = 0
+        label = LabelText(window=frame, text="", justify="right")
+        label.grid(
+            sticky="e",
+            column=col, row=row,
+            padx=0, pady=0,
+        )
+        self.transform_label = label
+
+        col += 1
+        text = "Transform & Save Copy"
+        button = ttk.Button(
+            frame,
+            text=text,
+            # command=self.generate_preview,
+        )
+        button.grid(
+            sticky="e",
+            column=1, row=row,
+            padx=self._pad, pady=self._pad,
+        )
+
     def draw_select_buttons(self, row: int) -> None:
         """Draw the select RAW and select RPL buttons."""
-        frame = tk.Frame(master=self._window)
+        frame = tk.Frame(master=self)
         frame.grid(
             sticky="ew",
             column=0, row=row,
-            padx=(0, 0), pady=(0, 0),
+            padx=self._pad, pady=self._pad,
         )
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=0)
@@ -259,7 +283,7 @@ class RawRplView(tk.Frame):
         button.grid(
             sticky="we",
             column=col, row=row,
-            padx=self._pad, pady=0,
+            padx=(0, self._pad[0]), pady=0,
         )
         Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
         col = 1
@@ -267,7 +291,7 @@ class RawRplView(tk.Frame):
         label.grid(
             sticky="w",
             column=col, row=row,
-            padx=self._pad, pady=0,
+            padx=0, pady=0,
         )
         self.raw_label = label
 
@@ -283,7 +307,7 @@ class RawRplView(tk.Frame):
         button.grid(
             sticky="we",
             column=col, row=row,
-            padx=self._pad, pady=0,
+            padx=(0, self._pad[0]), pady=0,
         )
         Tooltip(
             button,
@@ -294,7 +318,7 @@ class RawRplView(tk.Frame):
         label.grid(
             sticky="w",
             column=col, row=row,
-            padx=self._pad, pady=0,
+            padx=0, pady=0,
         )
         self.rpl_label = label
 
@@ -304,7 +328,7 @@ class RawRplView(tk.Frame):
         """Draw the header of the app with the title and the About button."""
         col = -1
 
-        frame = tk.Frame(master=self._window)
+        frame = tk.Frame(master=self)
         frame.grid(
             sticky="ew",
             column=0, row=row,
