@@ -38,6 +38,15 @@ class RawRplView(tk.Frame):
         row += 1
         self.draw_header(row)
 
+        # # Draw Separator
+        # row += 1
+        # separator = ttk.Separator(window, orient='horizontal')
+        # separator.grid(
+        #     sticky="ew",
+        #     column=0, row=row,
+        #     padx=self._pad, pady=(0, self._pad[0]),
+        # )
+
         # Draw Select buttons
         row += 1
         self.draw_select_buttons(row=row)
@@ -46,14 +55,18 @@ class RawRplView(tk.Frame):
         row += 1
         self.draw_preview_button(row=row)
 
-        # Draw Separator
+        # # Draw Separator
+        # row += 1
+        # separator = ttk.Separator(window, orient='horizontal')
+        # separator.grid(
+        #     sticky="ew",
+        #     column=0, row=row,
+        #     padx=self._pad, pady=self._pad,
+        # )
+
+        # Draw Rotation
         row += 1
-        separator = ttk.Separator(window, orient='horizontal')
-        separator.grid(
-            sticky="ew",
-            column=0, row=row,
-            padx=self._pad, pady=self._pad,
-        )
+        self.draw_rotation_buttons(row=row)
 
         # Finally, set last + 1 row as expander
         self.grid_rowconfigure(row + 1, weight=1)
@@ -142,7 +155,7 @@ class RawRplView(tk.Frame):
         self.generate_preview_label = label
 
         col = 1
-        text = "Generate preview image"
+        text = "Generate Preview Image"
         button = ttk.Button(
             frame,
             text=text,
@@ -153,8 +166,72 @@ class RawRplView(tk.Frame):
             column=col, row=row,
             padx=self._pad, pady=0,
         )
-        Tooltip(button, text="Generate a preview PNG image from the RAW-RPL pair.")
+        Tooltip(
+            button,
+            text=(
+                "Create a PNG preview image from the RAW-RPL pair and save as "
+                "<raw_filename>.preview.png."
+            )
+        )
         return
+
+    def draw_rotation_buttons(self, row: int) -> None:
+        transform_frame = tk.LabelFrame(master=self._window, text="Transform")
+        transform_frame.grid(
+            sticky="ew",
+            column=0, row=row,
+            padx=self._pad, pady=self._pad,
+        )
+        transform_frame.grid_rowconfigure(1, weight=1)
+        transform_frame.grid_columnconfigure(0, weight=1)
+
+        text = "Transform & Save As Copy"
+        button = ttk.Button(
+            transform_frame,
+            text=text,
+            # command=self.generate_preview,
+        )
+        button.grid(
+            sticky="we",
+            column=0, row=1,
+            padx=self._pad, pady=self._pad,
+        )
+
+        frame = tk.LabelFrame(master=transform_frame, text="Rotate")
+        frame.grid(
+            sticky="ew",
+            column=0, row=0,
+            padx=self._pad, pady=self._pad,
+        )
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+
+        row = -1
+
+        rotations = {
+            "90° left (CCW ↺)": {
+                "n": 1,
+            },
+            "90° right (CW ↻)": {
+                "n": 3,
+            },
+            "180°": {
+                "n": 2,
+            },
+        }
+
+        self.variable = tk.StringVar(frame, f"{next(iter(rotations))}")
+        # variable.get()
+
+        for rotation in rotations.keys():
+            row += 1
+            tk.Radiobutton(
+                frame,
+                text=rotation,
+                variable=self.variable,
+                value=rotation,
+                command=lambda x=self.variable: print(x.get()),
+            ).grid(sticky="w", column=0, row=row)
 
     def draw_select_buttons(self, row: int) -> None:
         """Draw the select RAW and select RPL buttons."""
@@ -170,32 +247,7 @@ class RawRplView(tk.Frame):
 
         row = -1
 
-        # RAW file
-        row += 1
-        col = 0
-        text = "Select RAW file..."
-        button = ttk.Button(
-            frame,
-            text=text,
-            command=self.select_raw_via_dialog,
-        )
-        button.grid(
-            sticky="we",
-            column=col, row=row,
-            padx=self._pad, pady=0,
-        )
-        Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
-
-        col = 1
-        label = LabelText(window=frame, text="No RAW file selected", justify="left")
-        label.grid(
-            sticky="w",
-            column=col, row=row,
-            padx=self._pad, pady=0,
-        )
-        self.raw_label = label
-
-        # TODO: Auto-find RPL based on selected RAW? Only do if RPL not selected?
+        # RPL file
         row += 1
         col = 0
         text = "Select RPL file..."
@@ -213,7 +265,6 @@ class RawRplView(tk.Frame):
             button,
             text="Select a RPL file belonging to an accompanying RAW file.",
         )
-
         col = 1
         label = LabelText(window=frame, text="No RPL file selected", justify="left")
         label.grid(
@@ -222,6 +273,30 @@ class RawRplView(tk.Frame):
             padx=self._pad, pady=0,
         )
         self.rpl_label = label
+
+        # RAW file
+        row += 1
+        col = 0
+        text = "Select RAW file..."
+        button = ttk.Button(
+            frame,
+            text=text,
+            command=self.select_raw_via_dialog,
+        )
+        button.grid(
+            sticky="we",
+            column=col, row=row,
+            padx=self._pad, pady=0,
+        )
+        Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
+        col = 1
+        label = LabelText(window=frame, text="No RAW file selected", justify="left")
+        label.grid(
+            sticky="w",
+            column=col, row=row,
+            padx=self._pad, pady=0,
+        )
+        self.raw_label = label
         return
 
     def draw_header(self, row: int) -> None:
