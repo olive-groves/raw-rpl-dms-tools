@@ -166,15 +166,14 @@ class LabelText(tk.Text):
     def __init__(
         self,
         *args,
-        window: tk.Tk,
         text: str,
         justify: Literal["left", "right"] = "left",
         **kwargs
     ) -> None:
-        super().__init__(window, *args, height=1, **kwargs)
+        super().__init__(*args, height=1, **kwargs)
         self.set_text(text)
         self.configure(font=font.nametofont('TkTextFont'))
-        self.configure(bg=window.cget('bg'), relief="flat")
+        self.configure(bg=self.master.cget('bg'), relief="flat")
         self.configure(state="disabled")
         self.tag_configure('tag-justify', justify=justify)
         self.configure(cursor="arrow")  # No mouse cursor

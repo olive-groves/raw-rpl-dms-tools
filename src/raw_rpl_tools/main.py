@@ -13,8 +13,8 @@ from raw_rpl_tools.view import RawRplView
 def main() -> None:
     """Main window."""
     window = tk.Tk()
-    window.title(f"{TITLE}")
-    window.geometry('320x360')
+    window.title(TITLE)
+    window.geometry('320x294')
 
     # Set icon based on operating system
     platformD = system()
@@ -32,9 +32,27 @@ def main() -> None:
             pass
 
     model = RawRplModel()
-    app = RawRplView(window=window, model=model)
+    app = RawRplView(model=model)
     model.observers.append(app)
-    app.mainloop()
+
+    # Layout
+    app.grid(
+        row=0,
+        column=0,
+        sticky="nsew",
+    )
+    tk.Label(
+        master=window,
+        text="<3",
+    ).grid(
+        pady=4,
+        row=1,
+        column=0,sticky="nsew",
+    )
+    window.grid_rowconfigure(1, weight=1)  # Push app to top of window
+    window.grid_columnconfigure(0, weight=1)
+
+    window.mainloop()
 
 
 if __name__ == "__main__":

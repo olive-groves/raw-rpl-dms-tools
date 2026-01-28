@@ -15,17 +15,9 @@ from raw_rpl_tools.metadata import TITLE, SUMMARY, VERSION, HOMEPAGE, LICENSE_FI
 
 class RawRplView(tk.Frame):
     """tk.Frame view on RdzRplControl."""
-    def __init__(self, window: tk.Tk, model: RawRplModel) -> None:
-        super().__init__(master=window)
+    def __init__(self, *args, model: RawRplModel, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self.model = model
-
-        window.grid_rowconfigure(0, weight=1)
-        window.grid_columnconfigure(0, weight=1)
-        self._window = window
-
-        self.grid(
-            sticky="new",
-        )
         self.grid_columnconfigure(0, weight=1)
 
         self._pad = (5, 5)
@@ -57,13 +49,7 @@ class RawRplView(tk.Frame):
         row += 1
         self.draw_transform_buttons(row=row)
 
-        row += 1
-        label = tk.Label(self, text="·")
-        label.grid(
-            sticky="s",
-            column=0, row=row,
-        )
-        self.grid_rowconfigure(row - 1, weight=1)
+        self.grid_rowconfigure(row, weight=1)
 
         # TODO:
         # "Save as rotated copy"
@@ -118,8 +104,8 @@ class RawRplView(tk.Frame):
         """Trigger 'Open file' dialog with optional initial path."""
         file = filedialog.askopenfilename(
             title=title,
-            multiple=False,
-            initialdir=initial_path
+            multiple=False,  # type: ignore
+            initialdir=initial_path,
         )
         return file
 
@@ -139,7 +125,7 @@ class RawRplView(tk.Frame):
 
         row += 1
         col = 0
-        label = LabelText(window=frame, text="", justify="right")
+        label = LabelText(master=frame, text="", justify="right")
         label.grid(
             sticky="e",
             column=col, row=row,
@@ -184,7 +170,7 @@ class RawRplView(tk.Frame):
         label.grid(
             sticky="w",
             column=0, row=transform_row,
-            padx=0, pady=0,
+            padx=0, pady=(0, self._pad[1]),
         )
 
         transform_row += 1
@@ -192,17 +178,18 @@ class RawRplView(tk.Frame):
         frame.grid(
             sticky="ew",
             column=0, row=transform_row,
-            padx=self._pad, pady=(0, self._pad[1]),
+            padx=0,
+            pady=(0, self._pad[1]),
         )
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
         row = -1
 
         rotations = {
-            "90° left (CCW ↺)": {
+            "90° left (counterclockwise)": {
                 "n": 1,
             },
-            "90° right (CW ↻)": {
+            "90° right (clockwise)": {
                 "n": 3,
             },
             "180°": {
@@ -236,7 +223,7 @@ class RawRplView(tk.Frame):
 
         row += 1
         col = 0
-        label = LabelText(window=frame, text="", justify="right")
+        label = LabelText(master=frame, text="", justify="right")
         label.grid(
             sticky="e",
             column=col, row=row,
@@ -254,7 +241,7 @@ class RawRplView(tk.Frame):
         button.grid(
             sticky="e",
             column=1, row=row,
-            padx=self._pad, pady=self._pad,
+            padx=0, pady=self._pad,
         )
 
     def draw_select_buttons(self, row: int) -> None:
@@ -287,7 +274,7 @@ class RawRplView(tk.Frame):
         )
         Tooltip(button, text="Select a RAW file belonging to an accompanying RPL file.")
         col = 1
-        label = LabelText(window=frame, text="No RAW file selected", justify="left")
+        label = LabelText(master=frame, text="No RAW file selected", justify="left")
         label.grid(
             sticky="w",
             column=col, row=row,
@@ -314,7 +301,7 @@ class RawRplView(tk.Frame):
             text="Select a RPL file belonging to an accompanying RAW file.",
         )
         col = 1
-        label = LabelText(window=frame, text="No RPL file selected", justify="left")
+        label = LabelText(master=frame, text="No RPL file selected", justify="left")
         label.grid(
             sticky="w",
             column=col, row=row,
@@ -342,6 +329,7 @@ class RawRplView(tk.Frame):
         label.grid(
             sticky="",
             column=col, row=0,
+            columnspan=2,
             padx=self._pad, pady=self._pad
         )
 
@@ -350,7 +338,7 @@ class RawRplView(tk.Frame):
         button = ttk.Button(
             frame,
             text=text,
-            command=lambda: show_about(self._window),
+            command=show_about,
             width=len(text) + 2
         )
         button.grid(
@@ -458,18 +446,20 @@ class RawRplView(tk.Frame):
             error = f"Error while generating preview:\n\n{e}"
         finally:
             if error:
-                messagebox.showerror(self._window.title(), error)
+                messagebox.showerror(TITLE, error)
             elif filepath:
                 messagebox.showinfo(
-                    self._window.title(),
+                    TITLE,
                     f"Preview generated:\n\n{filepath}",
                 )
         return
 
 
-def show_about(window: tk.Tk) -> None:
-        """Show the about page."""
-        title = window.title()
+def show_about() -> None:
+        """Show the about page.
+        
+        FIXME: Move function and button to main/window level?
+        """
         info = (
             f"{TITLE}"
             "\n\n"
@@ -481,4 +471,4 @@ def show_about(window: tk.Tk) -> None:
             "\n\n"
             f"{LICENSE_FILE}"
         )
-        messagebox.showinfo(title, info)
+        messagebox.showinfo(TITLE, info)
