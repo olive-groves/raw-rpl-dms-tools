@@ -6,8 +6,10 @@ maxrf4u Copyright (c) 2026 Frank Ligterink with changes by Lars Maxfield
 import os
 import platform
 import subprocess
+import re
 from pathlib import Path
 from typing import Literal
+from decimal import Decimal
 
 import numpy as np
 
@@ -488,29 +490,53 @@ def write_rpl(rpl: dict, filepath: Path, mode: WriteMode = 'x') -> None:
     return None
 
 
-def read_dms_header(filepath: Path) -> tuple[tuple[bytes, bytes], tuple[int, int, int]]:
-    """Get the first two lines of a DMS as binary strings and as dimensions.
+def parse_dms_header_dimensions(line: bytes) -> tuple[int, int, int]:
+    """Parse the dimensions line of a DMS header with respect to the DMS shape.
 
     Dimensions are in the DMS shape and can be directly passed to np.memmap:
         (images <rows>, height <cols>, width <depth>)
     """
+    dimensions_list: list[int] = [
+        int(dimension) for dimension in line.decode('ascii').strip().split()
+    ]
+    dimensions: tuple[int, int, int] = (
+        dimensions_list[2],  # depth -> images
+        dimensions_list[1],  # height -> rows
+        dimensions_list[0],  # width -> cols
+    )
+    return dimensions
+
+
+def split_dms_header_dimensions(line: bytes) -> tuple[bytes, bytes, bytes]:
+    """Split the dimensions line of a DMS header."""
+    match = re.match(
+        (
+            rb"(\s*\d+)"
+            rb"(\s+\d+)"
+            rb"(\s+\d+.*)"
+        ),
+        line,
+        re.DOTALL,  # Catch newline.
+    )
+    if not match:
+        raise ValueError(
+            "Line does not match " \
+            "'<whitespace><num><whitespace><num><whitespace><num><suffix>'"
+        )
+    return match.groups()  # type: ignore - Regex match logically must return three.
+
+
+def read_dms_header(filepath: Path) -> tuple[bytes, bytes]:
+    """Get the first two lines of a DMS as binary strings.
+
+    Size of the header can be determined with:
+    ```
+    sum([len(line) for line in lines])
+    ```
+    """
     with open(filepath, 'rb') as file:
         lines: tuple[bytes, bytes] = (file.readline(), file.readline())
-
-        dimensions_list: list[int] = [
-            int(line) for line in lines[1].decode('ascii').strip().split()
-        ]
-        dimensions: tuple[int, int, int] = (
-            dimensions_list[2],  # depth -> images
-            dimensions_list[1],  # height -> rows
-            dimensions_list[0],  # width -> cols
-        )
-
-        # # Size of the header. Both methods are valid.
-        # header_size: int = file.tell()
-        # header_size_calc = sum([len(line) for line in lines])
-    
-    return lines, dimensions
+    return lines
 
 
 def read_dms_elemental_names(
@@ -569,6 +595,43 @@ def save_dms_image(
 
     png.from_array(image, mode=f'L;{bitdepth}').save(path)
     return
+
+
+Number = float | int | Decimal
+
+
+def scientific(
+    x: Number,
+    precision: int = 2,
+    width: int = 2,
+) -> str:
+    """Format a number in scientific notation with mantissa precision, exponent width.
+
+    >> scientific(40.1234, 3, 3)
+
+    "4.012E+001"
+
+    Args:
+        x: The value to format.
+        precision: Precision of mantissa.
+        width: Fixed width of the exponent in digits.
+
+    Return:
+        Formatted string.
+    """
+    e = "E"
+    if isinstance(x, Decimal):
+        sci = f"{x:.{precision}{e}}"
+    else:
+        sci = f"{float(x):.{precision}{e}}"
+
+    mantissa, exp = sci.split(e)
+    sign = exp[0]
+    digits = exp[1:]
+
+    exponent = f"{int(digits):0{width}d}"
+    return f"{mantissa}{e}{sign}{exponent}"
+
 
 # # class DataStack:
 
