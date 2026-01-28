@@ -553,24 +553,21 @@ def read_dms_images(
     return images
 
 
-def save_dms_images(
-    images: np.typing.NDArray[np.float32],
-    paths: list[Path],
+def save_dms_image(
+    image: np.typing.NDArray[np.float32],
+    path: Path,
     bitdepth: Literal[8, 16] = 16,
 ) -> None:
     levels = 2 ** (bitdepth - 1)
     dtype: np.dtype = np.dtype(f"uint{bitdepth}")
-    for i, path in zip(range(images.shape[0]), paths):
-        image_memmap = images[i, :, :]
 
-        # Normalize to bit-depth
-        minimum = image_memmap.min()
-        maximum = image_memmap.max()
-        image = levels * (image_memmap - minimum) / (maximum - minimum)
-        image = image.astype(dtype)
+    # Normalize to bit-depth
+    minimum = image.min()
+    maximum = image.max()
+    image = levels * (image - minimum) / (maximum - minimum)
+    image = image.astype(dtype)
 
-        png.from_array(image, mode=f'L;{bitdepth}').save(path)
-
+    png.from_array(image, mode=f'L;{bitdepth}').save(path)
     return
 
 # # class DataStack:

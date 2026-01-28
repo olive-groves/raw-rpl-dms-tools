@@ -2,17 +2,12 @@
 
 from pathlib import Path
 from decimal import Decimal
-from typing import Literal
-
-import numpy as np
-import png
 
 from maxrf4u_lite.storage import (
     read_dms_images,
     read_dms_header,
     read_dms_elemental_names,
-    save_dms_images,
-    open_system_default,
+    save_dms_image,
 )
 
 Number = float | int | Decimal
@@ -61,7 +56,8 @@ image_paths = [
     dms_filepath.parent / f"{dms_filepath.stem}_{''.join(name.split())}.png"
     for name in names
 ]
-save_dms_images(images, image_paths, 16)
+for i, path in zip(range(images.shape[0]), image_paths):
+    save_dms_image(images[i, :, :], path, 16)
 
 # get np array (memmap?)
 # rotate it
