@@ -344,7 +344,7 @@ def make_raw_preview(
 
     if save:
         print(f'Saving: {preview_filepath}...')
-        png.from_array(raw_preview.astype(np.int8), mode='L;8').save(preview_filepath)
+        png.from_array(raw_preview.astype(np.uint8), mode='L;8').save(preview_filepath)
 
     if show:
         print(f'Showing file: {preview_filepath}')
@@ -409,7 +409,11 @@ def rot90_raw_rpl(
 
 
 def parse_rpl_keys(keys: dict) -> tuple[str, tuple[int, int, int]]:
-    """Parse the keys of an RPL in the return format of `read_rpl()`."""
+    """Parse the keys of an RPL in the return format of `read_rpl()` to dtype and shape.
+    
+    Returns:
+        Tuple containing the dtype (str) and shape (tuple).
+    """
     width = int(keys['width']['value'])
     height = int(keys['height']['value'])
     depth = int(keys['depth']['value'])
@@ -483,6 +487,71 @@ def write_rpl(rpl: dict, filepath: Path, mode: WriteMode = 'x') -> None:
 
     return None
 
+
+def read_dms_header(filepath: Path) -> tuple[tuple[bytes, bytes], tuple[int, int, int]]:
+    """Get the first two lines of a DMS as binary strings and as dimensions.
+
+    Dimensions are in Numpy array shape notation:
+        (rows <height>, columns <width>, images <depth>)
+    """
+    with open(filepath, 'rb') as file:
+        lines: tuple[bytes, bytes] = (file.readline(), file.readline())
+
+        dimensions_list: list[int] = [
+            int(line) for line in lines[1].decode('ascii').strip().split()
+        ]
+        dimensions: tuple[int, int, int] = (
+            dimensions_list[1],  # height -> rows
+            dimensions_list[0],  # width -> cols
+            dimensions_list[2],  # depth -> images
+        )
+
+        # # Size of the header. Both methods are valid.
+        # header_size: int = file.tell()
+        # header_size_calc = sum([len(line) for line in lines])
+    
+    return lines, dimensions
+
+
+def read_dms_elemental_names(
+        filepath: Path,
+        header_size: int,
+        dimensions: tuple[int, int, int],
+) -> tuple[list[bytes], list[str]]:
+    """Get the names of the elemental distribution images of a DMS.
+    
+    Returns:
+        Tuple containing the names as a list of binary strings and a list of decoded,
+        stripped strings.
+    """
+    with open(filepath, 'rb') as file:
+        offset: int = header_size + dimensions[1] * dimensions[0] * dimensions[2] * 4
+        file.seek(offset)
+
+        lines: list[bytes] = []
+        names: list[str] = []
+        while line := file.readline():
+            lines.append(line)
+            names.append(line.decode('utf-8').strip())
+
+    return lines, names
+
+
+def read_dms_images(
+        filepath: Path,
+        header_size: int,
+        dimensions: tuple[int, int, int],
+) -> np.memmap:
+# ) -> np.typing.NDArray[Any]:
+    # out = np.memmap(rot_raw_filepath, dtype=dtype, mode='w+', shape=rot_shape)
+    images: np.ndarray = np.memmap(
+        filepath,
+        mode='r',
+        dtype=np.float32,
+        offset=header_size,
+        shape=(dimensions[2], dimensions[0], dimensions[1]),
+    )
+    return images
 
 # # class DataStack:
 
