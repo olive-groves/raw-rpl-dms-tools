@@ -1,4 +1,4 @@
-"""Read a DMS using information from its corresponding RPL"""
+"""Read a DMS, save its images, rotate it, save it, and save its images."""
 
 from pathlib import Path
 
