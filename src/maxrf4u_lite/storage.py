@@ -491,8 +491,8 @@ def write_rpl(rpl: dict, filepath: Path, mode: WriteMode = 'x') -> None:
 def read_dms_header(filepath: Path) -> tuple[tuple[bytes, bytes], tuple[int, int, int]]:
     """Get the first two lines of a DMS as binary strings and as dimensions.
 
-    Dimensions are in Numpy array shape notation:
-        (rows <height>, columns <width>, images <depth>)
+    Dimensions are in the DMS shape and can be directly passed to np.memmap:
+        (images <rows>, height <cols>, width <depth>)
     """
     with open(filepath, 'rb') as file:
         lines: tuple[bytes, bytes] = (file.readline(), file.readline())
@@ -501,9 +501,9 @@ def read_dms_header(filepath: Path) -> tuple[tuple[bytes, bytes], tuple[int, int
             int(line) for line in lines[1].decode('ascii').strip().split()
         ]
         dimensions: tuple[int, int, int] = (
+            dimensions_list[2],  # depth -> images
             dimensions_list[1],  # height -> rows
             dimensions_list[0],  # width -> cols
-            dimensions_list[2],  # depth -> images
         )
 
         # # Size of the header. Both methods are valid.
@@ -541,17 +541,23 @@ def read_dms_images(
         filepath: Path,
         header_size: int,
         dimensions: tuple[int, int, int],
-) -> np.memmap:
-# ) -> np.typing.NDArray[Any]:
-    # out = np.memmap(rot_raw_filepath, dtype=dtype, mode='w+', shape=rot_shape)
+) -> np.typing.NDArray[np.float32]:
+    """Read the images of a DMS as a memory map with shape (images, height, width)."""
     images: np.ndarray = np.memmap(
         filepath,
         mode='r',
         dtype=np.float32,
         offset=header_size,
-        shape=(dimensions[2], dimensions[0], dimensions[1]),
+        shape=dimensions,
     )
     return images
+
+
+# def save_dms_images(
+#     cube: np.typing.NDArray[np.float32],
+#     bitdepth: Literal[8, 16],
+
+# )
 
 # # class DataStack:
 
