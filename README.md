@@ -58,4 +58,4 @@ Created by Lars Maxfield
 
 maxrf4u Copyright (c) 2026 Frank Ligterink with modifications by Lars Maxfield
 
-[Icon](https://icon-icons.com/icon/atom/96146) by [Good Stuff Non Sense](https://goodstuffnononsense.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+Icon ['Rubik cube cubes game'](https://icon-icons.com/icon/rubik-cube-cubes-game-toy/225301) by Icon-Icons.
