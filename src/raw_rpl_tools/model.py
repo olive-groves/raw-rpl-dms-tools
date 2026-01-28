@@ -68,7 +68,10 @@ class RawRplModel(Signaler):
         self._signal(overwrite)
 
     def generate_preview(self):
-        # TODO: Check RAW, RPL exist
+        if not self.raw_filepath:
+            raise Exception("RAW file not defined.")
+        if not self.rpl_filepath:
+            raise Exception("RPL file not defined.")
         filepath = make_raw_preview(
             self.raw_filepath,
             self.rpl_filepath,

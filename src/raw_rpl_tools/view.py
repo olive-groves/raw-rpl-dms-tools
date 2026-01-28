@@ -428,30 +428,14 @@ class RawRplView(tk.Frame):
 
     def generate_preview(self) -> PathOrNone:
         """Generate a preview with the model."""
-        # Check if RAW and RPL set!
-        # No? Error time ;)
-
-        # try:
-        #     self.model.generate
-        # except Exception as e:
-        #     showerror()>
-        # raise NotImplementedError()
-        error = None
-        filepath = None
         try:
             filepath = self.model.generate_preview()
-        except FileExistsError as e:
-            error = str(e)
-        except Exception as e:
-            error = f"Error while generating preview:\n\n{e}"
-        finally:
-            if error:
-                messagebox.showerror(TITLE, error)
-            elif filepath:
-                messagebox.showinfo(
-                    TITLE,
-                    f"Preview generated:\n\n{filepath}",
-                )
+        except Exception as error:
+            message = f"Error while generating preview:\n\n{str(error)}"
+            messagebox.showerror(TITLE, message,)
+        else:
+            message = f"Preview generated:\n\n{filepath}"
+            messagebox.showinfo(TITLE, message,)
         return
 
 
