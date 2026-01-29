@@ -13,9 +13,10 @@ def main() -> None:
     """Main window."""
     window = tk.Tk()
     window.title(TITLE)
-    window.geometry('320x294')
+    window.geometry('320x320')
     window.grid_rowconfigure(0, weight=1)
     window.grid_columnconfigure(0, weight=1)
+
     App(master=window).grid(row=0, column=0, sticky="nsew")
 
     # Set icon based on operating system

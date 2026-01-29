@@ -378,6 +378,10 @@ def rot90_raw_rpl(
     rot_rpl_filepath: Path = (
         output_dir / (rpl_filepath.stem + append + rpl_filepath.suffix)
     )
+    if rot_raw_filepath.exists() and mode != 'w':
+        raise FileExistsError(f'RAW file already exists: {rot_raw_filepath}.')
+    if rot_rpl_filepath.exists() and mode != 'w':
+        raise FileExistsError(f'RPL file already exists: {rot_raw_filepath}.')
 
     keys = read_rpl(rpl_filepath)
     dtype, shape = parse_rpl_keys(keys)
@@ -393,8 +397,6 @@ def rot90_raw_rpl(
     # Rotate RAW
     rot_raw_mm = np.rot90(raw_mm, k=n)
     rot_shape = rot_raw_mm.shape
-    if rot_raw_filepath.exists() and mode != 'w':
-        raise FileExistsError(f'RAW file already exists: {rot_raw_filepath}.')
     out = np.memmap(rot_raw_filepath, dtype=dtype, mode='w+', shape=rot_shape)
 
     # Go by chunk instead of all at once.

@@ -19,7 +19,7 @@ class RawRplModel(Signaler):
         """Initialize model."""
         self.raw_filepath = None
         self.rpl_filepath = None
-        self.rotate_degrees = 0
+        self.rotate_turns = 0
         self.overwrite = False
         return
 
@@ -48,14 +48,14 @@ class RawRplModel(Signaler):
         self._signal(path)
 
     @property
-    def rotate_degrees(self) -> int:
-        """Amount of degrees to rotate."""
-        return self._rotate_degrees
+    def rotate_turns(self) -> int:
+        """Amount of 90-degree turns to rotate."""
+        return self._rotate_turns
 
-    @rotate_degrees.setter
-    def rotate_degrees(self, degrees: int) -> None:
-        self._rotate_degrees = degrees
-        self._signal(degrees)
+    @rotate_turns.setter
+    def rotate_turns(self, turns: int) -> None:
+        self._rotate_turns = turns
+        self._signal(turns)
 
     @property
     def overwrite(self) -> bool:
@@ -67,7 +67,8 @@ class RawRplModel(Signaler):
         self._overwrite = overwrite
         self._signal(overwrite)
 
-    def generate_preview(self):
+    def generate_preview(self) -> PathOrNone:
+        """Generate a preview PNG image of the RAW-RPL pair."""
         if not self.raw_filepath:
             raise Exception("RAW file not defined.")
         if not self.rpl_filepath:
@@ -78,3 +79,17 @@ class RawRplModel(Signaler):
             show=True
         )
         self._signal(filepath)
+        return filepath
+
+    def transform_and_save_copy(self) -> tuple[PathOrNone, PathOrNone]:
+        """Transform and save a copy of the RAW-RPL pair."""
+        if not self.raw_filepath:
+            raise Exception("RAW file not defined.")
+        if not self.rpl_filepath:
+            raise Exception("RPL file not defined.")
+        return rot90_raw_rpl(
+            raw_filepath=self.raw_filepath,
+            rpl_filepath=self.rpl_filepath,
+            n=self.rotate_turns,
+            mode="x",  # Raise if exists
+        )

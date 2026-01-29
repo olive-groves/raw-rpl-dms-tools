@@ -22,6 +22,24 @@ class RawRplView(tk.Frame):
 
         self._pad = (5, 5)
 
+        self.rotations = {
+            "90° left (counterclockwise)": {
+                "turns": 1,
+            },
+            "90° right (clockwise)": {
+                "turns": 3,
+            },
+            "180°": {
+                "turns": 2,
+            },
+        }
+        default_turns = 1
+        self.model.rotate_turns = default_turns
+        rotations_key_str = next(
+            (k for k, v in self.rotations.items() if v.get("turns") == default_turns),
+        )
+        self.rotations_key = tk.StringVar(master=self, value=f"{rotations_key_str}")
+
         row = -1
 
         # Draw Select buttons
@@ -151,6 +169,7 @@ class RawRplView(tk.Frame):
         return
 
     def draw_transform_buttons(self, row: int) -> None:
+        """Draw the transform frame and rotate subframe."""
         transform_frame = tk.Frame(master=self)
         transform_frame.grid(
             sticky="ew",
@@ -181,29 +200,21 @@ class RawRplView(tk.Frame):
         frame.grid_columnconfigure(0, weight=1)
         row = -1
 
-        rotations = {
-            "90° left (counterclockwise)": {
-                "n": 1,
-            },
-            "90° right (clockwise)": {
-                "n": 3,
-            },
-            "180°": {
-                "n": 2,
-            },
-        }
-
-        self.variable = tk.StringVar(frame, f"{next(iter(rotations))}")
-        # variable.get()
-
-        for rotation in rotations.keys():
+        for rotation in self.rotations.keys():
             row += 1
             tk.Radiobutton(
                 frame,
                 text=rotation,
-                variable=self.variable,
+                variable=self.rotations_key,
                 value=rotation,
-                command=lambda x=self.variable: print(x.get()),
+                command=lambda k=self.rotations_key: [
+                    setattr(
+                        self.model,
+                        "rotate_turns",
+                        self.rotations[k.get()]["turns"],
+                    ),
+                    print(k.get()),
+                ],
             ).grid(sticky="w", column=0, row=row)
 
         transform_row += 1
@@ -213,9 +224,27 @@ class RawRplView(tk.Frame):
             column=0, row=transform_row,
             padx=0, pady=0,
         )
-        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_rowconfigure(2, weight=1)
         frame.grid_columnconfigure(0, weight=1)
         row = -1
+
+        row += 1
+        self.generate_transform_preview = tk.IntVar(master=self, value=1)
+        col = 0
+        tk.Checkbutton(
+            frame,
+            text="Generate preview of transformed copy",
+            variable=self.generate_transform_preview,
+            onvalue=1,
+            offvalue=0,
+            command=lambda g=self.generate_transform_preview: [],
+        ).grid(
+            sticky="w",
+            row=row,
+            column=0,
+            columnspan=2,
+            padx=0, pady=0,
+        )
 
         row += 1
         col = 0
@@ -232,7 +261,9 @@ class RawRplView(tk.Frame):
         button = ttk.Button(
             frame,
             text=text,
-            # command=self.generate_preview,
+            command=lambda p=self.generate_transform_preview: [
+                self.transform_and_save_copy(preview=bool(p.get())),
+            ]
         )
         button.grid(
             sticky="e",
@@ -379,14 +410,19 @@ class RawRplView(tk.Frame):
             prefix="RPL file"
         )
 
+    def rotate_turns_listener(self, turns: int) -> None:
+        """Listener for RawRplModel.rotate_turns."""
+        return
+
     def generate_preview_listener(self, path: PathOrNone) -> None:
-        """Listener for generate_preview."""
+        """Listener for RawRplModel.generate_preview."""
         text = str(path or "")
         self.generate_preview_label.set_text(text=text)
         return
 
     def generate_preview(self) -> PathOrNone:
         """Generate a preview with the model."""
+        filepath = None
         try:
             filepath = self.model.generate_preview()
         except Exception as error:
@@ -395,4 +431,41 @@ class RawRplView(tk.Frame):
         else:
             message = f"Preview generated:\n\n{filepath}"
             messagebox.showinfo(TITLE, message,)
-        return
+        return filepath
+
+    def transform_and_save_copy(
+        self,
+        preview: bool = True,
+    ) -> tuple[PathOrNone, PathOrNone, PathOrNone]:
+        """Transform and save a RAW-RPL copy with an optional preview with the model."""
+        raw_tr: PathOrNone = None
+        rpl_tr: PathOrNone = None
+        preview_tr: PathOrNone = None
+        try:
+            raw_tr, rpl_tr = self.model.transform_and_save_copy()
+        except Exception as error:
+            message = f"Error while transforming and saving RAW-RPL:\n\n{str(error)}"
+            messagebox.showerror(TITLE, message,)
+            return raw_tr, rpl_tr, preview_tr
+        else:
+            message = f"Transformed RAW-RPL saved:\n\n{raw_tr}\n{rpl_tr}"
+            messagebox.showinfo(TITLE, message,)
+
+        if preview:
+            try:
+                model = RawRplModel()
+                model.raw_filepath = raw_tr
+                model.rpl_filepath = rpl_tr
+                preview_tr = model.generate_preview()
+            except Exception as error:
+                message = (
+                    "Error while generating preview of transformed RAW-RPL:\n\n"
+                    f"{str(error)}"
+                )
+                messagebox.showerror(TITLE, message,)
+                return raw_tr, rpl_tr, preview_tr
+            else:
+                message = f"Preview of transformed RAW-RPL generated:\n\n{preview_tr}"
+                messagebox.showinfo(TITLE, message,)
+
+        return raw_tr, rpl_tr, preview_tr
