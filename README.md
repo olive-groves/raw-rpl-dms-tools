@@ -2,7 +2,7 @@
 
 User interface to manipulate RAW-RPL (Ripple) file pairs and Datamuncher DMS files containing MA-XRF spectral data.
 
-Built with Python and a modified, stripped-down version of [`maxrf4u`](https://github.com/fligt/maxrf4u) package by [Frank Ligterink](https://github.com/fligt).
+Built with Python and a modified, stripped-down version of [`maxrf4u`↗](https://github.com/fligt/maxrf4u) package by [Frank Ligterink↗](https://github.com/fligt).
 
 Available for macOS and Windows at just under 20 MB.
 
@@ -21,7 +21,7 @@ TODO: Screenshot
 
 > [!NOTE]
 > macOS might block you from running the package. Try:
-> - [Open a Mac app from an unknown developer ↗](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac).
+> - [Open a Mac app from an unknown developer↗](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac)
 [![Open a Mac app from an unknown developer](docs/macos-unknown-developer.png)](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac)
 
 
@@ -65,12 +65,12 @@ Created by Lars Maxfield
 
 maxrf4u Copyright (c) 2026 Frank Ligterink with modifications by Lars Maxfield
 
-Icon ['Rubik cube cubes game'](https://icon-icons.com/icon/rubik-cube-cubes-game-toy/225301) by Icon-Icons.
+Icon ['Rubik cube cubes game'↗](https://icon-icons.com/icon/rubik-cube-cubes-game-toy/225301) by Icon-Icons.
 
 
-### Questions
+## Questions
 
-## Open without Windows Defender SmartScreen
+### Open without Windows Defender SmartScreen
 
 ![Windows Defender SmartScreen pop-up, which may show if running the executable with limited privileges.](docs/windows-defender.png)
 
