@@ -65,21 +65,6 @@ class RawRplView(tk.Frame):
 
         self.grid_rowconfigure(row, weight=1)
 
-        # TODO:
-        # "Save as rotated copy"
-
-        # # Draw output field
-        # row += 1
-        # self.draw_output(row=row)
-
-        # # Draw settings (include CSV's, include JPG's, overwrite)
-        # row += 1
-        # self.draw_settings(row=row, overwrite=overwrite)
-
-        # # Draw Extract & Save button
-        # row += 1
-        # self.draw_extract_and_save_button(row=row)
-
     def select_raw_via_dialog(self) -> None:
         """Trigger an Open File dialog to select and set the RAW filepath."""
         if existing_path := self.model.raw_filepath:
