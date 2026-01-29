@@ -1,4 +1,4 @@
-"""Model."""
+"""Model for RAW-RPL functions."""
 
 from pathlib import Path
 

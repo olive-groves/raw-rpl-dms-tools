@@ -1,4 +1,4 @@
-"""View."""
+"""View for RawRplModel."""
 
 from builtins import property
 from pathlib import Path
