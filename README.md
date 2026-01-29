@@ -39,13 +39,13 @@ poetry install
 ### Windows executable
 
 ```
-pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_tools --icon=icon.ico --add-data=C:\art\raw-rpl-tools\src\raw_rpl_tools\icon.ico:. .\main.py
+pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.ico --add-data=C:\art\raw-rpl-dms-tools\src\raw_rpl_dms_tools\icon.ico:. .\main.py
 ```
 
 ### macOS package
 
 ```bash
-cd src/raw_rpl_tools
+cd src/raw_rpl_dms_tools
 pyinstaller --onefile --windowed script.py -y 
 ```
 

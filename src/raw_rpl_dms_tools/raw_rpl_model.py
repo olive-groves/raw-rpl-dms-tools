@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from raw_rpl_tools.signaler import Signaler
+from raw_rpl_dms_tools.signaler import Signaler
 from maxrf4u_lite.storage import make_raw_preview, rot90_raw_rpl
 
 PathOrNone = Path | None

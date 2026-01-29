@@ -1,7 +1,7 @@
 [project]
-name = "raw-rpl-tools"
+name = "raw-rpl-dms-tools"
 version = "0.1.0"
-description = "User interface to manipulate RAW RPL (Ripple) file pairs of MA-XRF spectral data"
+description = "User interface to manipulate RAW RPL (Ripple) file pairs and DMS files of MA-XRF spectral data"
 authors = [
     {name = "Lars Maxfield",email = "83759569+larsmaxfield@users.noreply.github.com"}
 ]
@@ -17,11 +17,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/olive-groves/raw-rpl-tools"
+Homepage = "https://github.com/olive-groves/raw-rpl-dms-tools"
 
 [tool.poetry]
 packages = [
-    {include = "raw_rpl_tools", from = "src"},
+    {include = "raw_rpl_dms_tools", from = "src"},
     {include = "maxrf4u_lite", from = "src"},
 ]
 

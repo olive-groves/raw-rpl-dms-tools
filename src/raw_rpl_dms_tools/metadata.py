@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 import importlib.metadata
-import raw_rpl_tools
+import raw_rpl_dms_tools
 
 
 def parse_project_url(project_url: list[str]) -> dict:
@@ -16,8 +16,8 @@ def parse_files(files: list[importlib.metadata.PackagePath]) -> dict:
     return {path.name: path for file in files if (path := Path(file))}
 
 
-TITLE = "RAW RPL Tools"
-NAME = raw_rpl_tools.__name__
+TITLE = "RAW-RPL DMS Tools"
+NAME = raw_rpl_dms_tools.__name__
 
 _metadata = importlib.metadata.metadata(NAME).json
 

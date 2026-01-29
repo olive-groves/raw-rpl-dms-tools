@@ -8,13 +8,13 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
 
-from raw_rpl_tools.model import RawRplModel, PathOrNone
-from raw_rpl_tools.tk_utilities import Tooltip, LabelText
-from raw_rpl_tools.metadata import TITLE, SUMMARY, VERSION, HOMEPAGE, LICENSE_FILE
+from raw_rpl_dms_tools.raw_rpl_model import RawRplModel, PathOrNone
+from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText
+from raw_rpl_dms_tools.metadata import TITLE
 
 
 class RawRplView(tk.Frame):
-    """tk.Frame view on RdzRplControl."""
+    """tk.Frame view on RdzRplModel."""
     def __init__(self, *args, model: RawRplModel, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.model = model
@@ -23,10 +23,6 @@ class RawRplView(tk.Frame):
         self._pad = (5, 5)
 
         row = -1
-
-        # Draw About box
-        row += 1
-        self.draw_header(row)
 
         # Draw Select buttons
         row += 1
@@ -311,43 +307,6 @@ class RawRplView(tk.Frame):
 
         return
 
-    def draw_header(self, row: int) -> None:
-        """Draw the header of the app with the title and the About button."""
-        col = -1
-
-        frame = tk.Frame(master=self)
-        frame.grid(
-            sticky="ew",
-            column=0, row=row,
-            padx=(0, 0), pady=(0, 0)
-        )
-        frame.grid_rowconfigure(0, weight=1)
-        frame.grid_columnconfigure(0, weight=1)
-
-        col += 1
-        label = ttk.Label(frame, text=TITLE)
-        label.grid(
-            sticky="",
-            column=col, row=0,
-            columnspan=2,
-            padx=self._pad, pady=self._pad
-        )
-
-        col += 1
-        text = "?"
-        button = ttk.Button(
-            frame,
-            text=text,
-            command=show_about,
-            width=len(text) + 2
-        )
-        button.grid(
-            sticky="e",
-            column=col, row=0,
-            padx=self._pad, pady=self._pad
-        )
-        Tooltip(button, text=f"About {TITLE}...")
-
     def _set_path(
         self,
         property_: property,
@@ -437,22 +396,3 @@ class RawRplView(tk.Frame):
             message = f"Preview generated:\n\n{filepath}"
             messagebox.showinfo(TITLE, message,)
         return
-
-
-def show_about() -> None:
-        """Show the about page.
-        
-        FIXME: Move function and button to main/window level?
-        """
-        info = (
-            f"{TITLE}"
-            "\n\n"
-            f"{SUMMARY}"
-            "\n\n"
-            f"Version {VERSION}"
-            "\n\n"
-            f"{HOMEPAGE}"
-            "\n\n"
-            f"{LICENSE_FILE}"
-        )
-        messagebox.showinfo(TITLE, info)
