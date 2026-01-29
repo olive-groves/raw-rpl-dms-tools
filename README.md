@@ -1,6 +1,6 @@
 # RAW RPL Tools
 
-User interface to preview and rotate RAW RPL (Ripple) file pairs of MA-XRF spectral data.
+User interface to manipulate RAW-RPL (Ripple) file pairs and Datamuncher DMS files containing MA-XRF spectral data.
 
 Built with Python and a modified, stripped-down version of [`maxrf4u`](https://github.com/fligt/maxrf4u) package by [Frank Ligterink](https://github.com/fligt).
 

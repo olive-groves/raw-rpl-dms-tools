@@ -1,7 +1,7 @@
 [project]
 name = "raw-rpl-dms-tools"
 version = "0.1.0"
-description = "User interface to manipulate RAW RPL (Ripple) file pairs and DMS files of MA-XRF spectral data"
+description = "User interface to manipulate RAW-RPL (Ripple) file pairs and Datamuncher DMS files containing MA-XRF spectral data"
 authors = [
     {name = "Lars Maxfield",email = "83759569+larsmaxfield@users.noreply.github.com"}
 ]
