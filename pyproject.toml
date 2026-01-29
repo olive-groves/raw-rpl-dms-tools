@@ -40,8 +40,8 @@ ignore = [
     # Do not require class __init__ docstring; use class docstring instead.
     "D107",
     # Ignore *args, **kwargs type hints
-    "ANN02",
-    "ANN03",
+    "ANN002",
+    "ANN003",
 ]
 
 [tool.ruff.lint.pydocstyle]
