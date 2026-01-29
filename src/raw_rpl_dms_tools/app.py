@@ -6,6 +6,8 @@ from tkinter import messagebox
 
 from raw_rpl_dms_tools.raw_rpl_model import RawRplModel
 from raw_rpl_dms_tools.raw_rpl_view import RawRplView
+from raw_rpl_dms_tools.dms_model import DmsModel
+from raw_rpl_dms_tools.dms_view import DmsView
 from raw_rpl_dms_tools.metadata import TITLE, SUMMARY, VERSION, HOMEPAGE, LICENSE_FILE
 from raw_rpl_dms_tools.tk_utilities import Tooltip
 
@@ -21,8 +23,8 @@ class App(tk.Frame):
         raw_rpl_view = RawRplView(master=self, model=raw_rpl_model)
         raw_rpl_model.observers.append(raw_rpl_view)
 
-        dms_model = RawRplModel()
-        dms_view = RawRplView(master=self, model=dms_model)
+        dms_model = DmsModel()
+        dms_view = DmsView(master=self, model=dms_model)
         dms_model.observers.append(dms_view)
 
         self.tabs = {
