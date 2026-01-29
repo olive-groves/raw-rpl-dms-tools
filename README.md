@@ -39,6 +39,7 @@ poetry install
 ### Windows executable
 
 ```
+cd .\src\raw_rpl_dms_tools
 pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.ico --add-data=C:\art\raw-rpl-dms-tools\src\raw_rpl_dms_tools\icon.ico:. .\main.py
 ```
 
