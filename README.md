@@ -1,4 +1,4 @@
-# RAW RPL Tools
+# RAW-RPL DMS Tools
 
 User interface to manipulate RAW-RPL (Ripple) file pairs and Datamuncher DMS files containing MA-XRF spectral data.
 
