@@ -338,17 +338,8 @@ class RawRplView(tk.Frame):
 
         return
 
-    def _set_path(
-        self,
-        property_: property,
-        path: PathOrNone,
-        # notify: QtCore.pyqtSignal | QtCore.pyqtBoundSignal | None = None,
-        prefix: str = "File"
-    ) -> None:
-        """Call the setter of a model path property.
-
-        # set_ (QtCore.pyqtSignal): Signal to emit set value of property
-        """
+    def _set_path(self, property_: property, path: PathOrNone) -> None:
+        """Call the setter of a model path property."""
         instance = self.model
 
         if property_.fset is None:
@@ -356,28 +347,8 @@ class RawRplView(tk.Frame):
 
         try:
             property_.fset(instance, path)
-        except ValueError as e:
-            message = str(e)
-            severity = "error"
-            status = "waiting"
-            property_.fset(instance, None)
-        except FileNotFoundError:
-            message = f"{prefix} does not exist"
-            severity = "error"
-            status = "waiting"
-            property_.fset(instance, None)
         except Exception:
-            message = "Unexpected error; could not set"
-            severity = "error"
-            status = "waiting"
             property_.fset(instance, None)
-        else:
-            message = f"{prefix} selected"
-            severity = "info"
-            status = "done" if path else "waiting"
-        # if notify:
-        #     notify.emit(Notification(
-        #         text=message, severity=severity, status=status))
         return
 
     def raw_filepath_listener(self, path: Path) -> None:
@@ -390,9 +361,7 @@ class RawRplView(tk.Frame):
         """Set the RAW filepath of the model."""
         self._set_path(
             property_=RawRplModel.raw_filepath,
-            # notify=self.h5_file_notify,
             path=path,
-            prefix="RAW file"
         )
 
     def rpl_filepath_listener(self, path: Path) -> None:
@@ -405,9 +374,7 @@ class RawRplView(tk.Frame):
         """Set the RPL filepath of the model."""
         self._set_path(
             property_=RawRplModel.rpl_filepath,
-            # notify=self.h5_file_notify,
             path=path,
-            prefix="RPL file"
         )
 
     def rotate_turns_listener(self, turns: int) -> None:
