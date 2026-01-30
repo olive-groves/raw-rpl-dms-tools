@@ -1,17 +1,33 @@
 # RAW-RPL DMS Tools
+![Logo for RAW-RPL DMS Tools, an illustration of two Rubik's cubes.](src/raw_rpl_dms_tools/icon.svg)
 
-User interface to manipulate RAW-RPL (Ripple) file pairs and Datamuncher DMS files containing MA-XRF spectral data.
+User interface to manipulate RAW-RPL (Ripple) file pairs and Datamuncher DMS files containing MA-XRF spectral data:
+
+- Rotate 90°, –90°, and 180°
+- Generate preview images from RAW-RPLs
+- Extract elemental distribution images from DMSs
+
+![Interface of RAW-RPL DMS Tools in RAW-RPL mode.](docs/raw-rpl.png) ![Interface of RAW-RPL DMS Tools in DMS mode.](docs/DMS.png)
 
 Built with Python and a modified, stripped-down version of [`maxrf4u`↗](https://github.com/fligt/maxrf4u) package by [Frank Ligterink↗](https://github.com/fligt).
 
-Available for macOS and Windows at just under 20 MB.
+Available for [macOS](#macos) and [Windows](#windows) at just under 25 MB.
 
-TODO: Screenshot
+## Download and run
 
-
-## TODO: Download and run
+Run as [Windows executable](#windows), a [macOS package](#macos), or directly with [Python](#developers).
 
 ### Windows
+
+For Windows, RAW-RPL DMS Tools is available as a portable, no-install executable that runs directly by double-clicking or running from the command prompt:
+
+1. [Download the latest Windows version](https://github.com/olive-groves/raw-rpl-dms-tools/releases/latest) under `raw-rpl-dms-tools_vx.y.z_win64_portable.exe.zip`
+
+2. Extract `raw-rpl-dms-tools_vx.y.z_win64_portable.exe` from the ZIP.
+   
+3. Double-click the extracted `raw-rpl-dms-tools_vx.y.z_win64_portable.exe`.
+
+4. **Wait up to 30 seconds** for RAW-RPL DMS Tools to open.
 
 > [!NOTE]
 > Windows Defender SmartScreen might block you from running the executable via double-click. Try:
@@ -19,47 +35,73 @@ TODO: Screenshot
 
 ### macOS
 
+For macOS, RAW-RPL DMS Tools installs to your computer with an app file which you drag into Applications. The app can then be started directly from Launchpad:
+
+1. [Download the latest macOS version](https://github.com/olive-groves/raw-rpl-dms-tools/releases/latest) under `raw-rpl-dms-tools_vx.y.z_macOS.app.zip`
+
+2. In Finder, extract `raw-rpl-dms-tools_vx.y.z_macOS.app.exe` from the ZIP.
+
+3. Drag `RAW-RPL DMS Tools` into Applications.
+
+4. Go to Applications (***not* Launchpad**). 
+
+5. In Applications, control-click (right-click) on RAW-RPL DMS Tools, then click Open.
+
 > [!NOTE]
 > macOS might block you from running the package. Try:
 > - [Open a Mac app from an unknown developer↗](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac)
 [![Open a Mac app from an unknown developer](docs/macos-unknown-developer.png)](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac)
 
 
-## TODO: Features
+## Developers
 
-### Preview
+RAW RPL Tools runs on Python 3.14 with just a couple dependencies in `pyproject.toml`.
 
-### Rotate
+### Install and run
 
-## TODO: Developers
-
-RAW RPL Tools runs on Python 3.14 with a just a couple [dependencies](#dependencies).
-
-### Dependencies
-
-### Install
+Once cloned, you can use Poetry to install the dependencies:
 
 ```bash
 poetry install
 ```
 
+And then run with:
 
-### Windows executable
+```bash
+poetry run python ./src/raw_rpl_dms_tools/main.py
+```
 
+> #### `conda`
+> 
+> If you use `conda` (Anaconda), I recommend manually creating a Python environment instead of solving from `environment.yml`.
+> 
+> Change directory to the repo root and run these commands to manually create the environment in `./env`:
+> 
+> ````
+> conda create -y --prefix ./env python=3.14 --force
+> conda activate ./env
+> pip install poetry -y
+> poetry install
+> ````
+>
+> To activate the environment in the future, change directory to repo root and run `conda activate ./env`. 
+
+### Compiling with `pyinstaller`
+
+Windows portable executable:
 ```
 cd .\src\raw_rpl_dms_tools
 pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.ico --add-data=C:\art\raw-rpl-dms-tools\src\raw_rpl_dms_tools\icon.ico:. .\main.py
 ```
 
-### macOS package
-
+macOS package (TODO: Verify this!):
 ```bash
 cd src/raw_rpl_dms_tools
-pyinstaller --onefile --windowed script.py -y 
+pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.icns --add-data=./raw-rpl-dms-tools/src/raw_rpl_dms_tools/icon.icns:. script.py -y 
 ```
 
 
-## TODO: Credits
+## Credits
 
 Created by Lars Maxfield
 
@@ -78,10 +120,10 @@ Icon ['Rubik cube cubes game'↗](https://icon-icons.com/icon/rubik-cube-cubes-g
 
 If you have admin privileges:
 
-1. Double-click on `pdz-extractor_vx.y.z_win64_portable.exe`.
+1. Double-click on `raw-rpl-dms-tools_vx.y.z_win64_portable.exe`.
 2. On the Windows Defender SmartScreen pop-up, select **More info**.
 3. Select **Run anyway**. _No **Run anyway**? Select **Don't run** and [try Option 2.](#run-option-2-without-admin-privileges)_
-4. Wait for PDZ Extractor to open. This may take a few seconds.
+4. Wait for RAW-RPL DMS Tools to open. This may take a few seconds.
 
 #### Run option 2: Without admin privileges
 
