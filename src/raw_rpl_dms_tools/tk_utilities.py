@@ -61,18 +61,22 @@ class Tooltip:
         self.id = None
         self.tw = None
 
-    def onEnter(self, event=None) -> None:
+    def onEnter(self, event: tk.Event | None = None) -> None:
+        """Enter event."""
         self.schedule()
 
-    def onLeave(self, event=None) -> None:
+    def onLeave(self, event: tk.Event | None = None) -> None:
+        """Leave event."""
         self.unschedule()
         self.hide()
 
     def schedule(self) -> None:
+        """Schedule."""
         self.unschedule()
         self.id = self.widget.after(self.waittime, self.show)
 
     def unschedule(self) -> None:
+        """Unschedule."""
         id_ = self.id
         self.id = None
         if id_:
@@ -81,15 +85,20 @@ class Tooltip:
     def show(self) -> None:
         """Show."""
         def tip_pos_calculator(
-            widget, label, *, tip_delta=(10, 5), pad=(5, 3, 5, 3)
+            widget: tk.Widget,
+            label: tk.Label, *,
+            tip_delta: tuple[int, int] = (10, 5),
+            pad: tuple[int, int, int, int] = (5, 3, 5, 3)
         ) -> tuple[int, int]:
 
             w = widget
 
             s_width, s_height = w.winfo_screenwidth(), w.winfo_screenheight()
 
-            width, height = (pad[0] + label.winfo_reqwidth() + pad[2],
-                             pad[1] + label.winfo_reqheight() + pad[3])
+            width, height = (
+                pad[0] + label.winfo_reqwidth() + pad[2],
+                pad[1] + label.winfo_reqheight() + pad[3]
+            )
 
             mouse_x, mouse_y = w.winfo_pointerxy()
 
@@ -106,7 +115,6 @@ class Tooltip:
             offscreen = (x_delta, y_delta) != (0, 0)
 
             if offscreen:
-
                 if x_delta:
                     x1 = mouse_x - tip_delta[0] - width
 

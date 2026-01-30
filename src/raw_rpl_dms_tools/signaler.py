@@ -10,12 +10,12 @@ class Signaler:
     Args:
         must_listen (bool): If true, raises error if method listener not found
     """
-    def __init__(self, must_listen=True):
+    def __init__(self, must_listen: bool = True) -> None:
         super().__init__()
         self.observers = []
         self.must_listen = must_listen
 
-    def _signal(self, *args, **kwargs):
+    def _signal(self, *args, **kwargs) -> None:
         """Signal a property change to observer listeners."""
         if f_back := sys._getframe().f_back:
             if f_code := f_back.f_code:
@@ -40,29 +40,29 @@ to `False`.""")
 
 class ExampleSignaler(Signaler):
     """Example implementation of Signaler class."""
-    def __init__(self, my_attribute, observers: list | None = None):
+    def __init__(self, my_attribute: object, observers: list | None = None) -> None:
         super().__init__(must_listen=True)
         if observers:
             self.observers.extend(observers)
         self.my_attribute = my_attribute
 
     @property
-    def my_attribute(self):
+    def my_attribute(self) -> object:
         """Example attribute."""
         return self._my_attribute
 
     @my_attribute.setter
-    def my_attribute(self, attribute):
+    def my_attribute(self, attribute: object) -> None:
         self._my_attribute = attribute
         self._signal(attribute)
 
 
 class ExampleListener:
     """Example implementation of a listener of Signaler."""
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def my_attribute_listener(self, attribute):
+    def my_attribute_listener(self, attribute: object) -> None:
         """my_attribute listener.
 
         Args:
