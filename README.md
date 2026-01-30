@@ -97,7 +97,7 @@ cd .\src\raw_rpl_dms_tools
 pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.ico --add-data=C:\art\raw-rpl-dms-tools\src\raw_rpl_dms_tools\icon.ico:. .\main.py
 ```
 
-macOS package (TODO: Verify this!):
+macOS package:
 ```bash
 cd src/raw_rpl_dms_tools
 poetry run pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.icns --add-data=/Users/max/Developer/git/raw-rpl-tools/src/raw_rpl_dms_tools/icon.icns:. main.py -y 
