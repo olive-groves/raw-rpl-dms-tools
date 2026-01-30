@@ -42,6 +42,7 @@ class Tooltip:
         self,
         widget: tk.Widget,
         *,
+        fg: str = "#000000",
         bg: str = '#FFFFEA',
         pad: tuple[int, int, int, int] = (5, 3, 5, 3),
         text: str = 'widget info',
@@ -56,6 +57,7 @@ class Tooltip:
         self.widget.bind("<Enter>", self.onEnter)
         self.widget.bind("<Leave>", self.onLeave)
         self.widget.bind("<ButtonPress>", self.onLeave)
+        self.fg = fg
         self.bg = bg
         self.pad = pad
         self.id = None
@@ -134,6 +136,7 @@ class Tooltip:
 
             return x1, y1
 
+        fg = self.fg
         bg = self.bg
         pad = self.pad
         widget = self.widget
@@ -153,6 +156,7 @@ class Tooltip:
             win,
             text=self.text,
             justify=tk.LEFT,
+            fg=fg,
             background=bg,
             relief=tk.SOLID,
             borderwidth=0,
