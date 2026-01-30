@@ -13,8 +13,8 @@ from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText
 from raw_rpl_dms_tools.metadata import TITLE
 
 
-class DmsView(tk.Frame):
-    """tk.Frame view on RdzRplModel."""
+class DmsView(ttk.Frame):
+    """ttk.Frame view on DmsModel."""
     def __init__(self, *args, model: DmsModel, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.model = model
@@ -110,7 +110,7 @@ class DmsView(tk.Frame):
 
     def draw_preview_button(self, row: int) -> None:
         """Draw the generate preview button."""
-        frame = tk.Frame(master=self)
+        frame = ttk.Frame(master=self)
         frame.grid(
             sticky="ew",
             column=0, row=row,
@@ -155,7 +155,7 @@ class DmsView(tk.Frame):
 
     def draw_transform_buttons(self, row: int) -> None:
         """Draw the transform frame and rotate subframe."""
-        transform_frame = tk.Frame(master=self)
+        transform_frame = ttk.Frame(master=self)
         transform_frame.grid(
             sticky="ew",
             column=0, row=row,
@@ -166,7 +166,7 @@ class DmsView(tk.Frame):
         transform_row = -1
 
         transform_row += 1
-        label = tk.Label(master=transform_frame, text="Transform")
+        label = ttk.Label(master=transform_frame, text="Transform")
         label.grid(
             sticky="w",
             column=0, row=transform_row,
@@ -174,7 +174,7 @@ class DmsView(tk.Frame):
         )
 
         transform_row += 1
-        frame = tk.LabelFrame(master=transform_frame, text="Rotate")
+        frame = ttk.LabelFrame(master=transform_frame, text="Rotate")
         frame.grid(
             sticky="ew",
             column=0, row=transform_row,
@@ -187,7 +187,7 @@ class DmsView(tk.Frame):
 
         for rotation in self.rotations.keys():
             row += 1
-            tk.Radiobutton(
+            ttk.Radiobutton(
                 frame,
                 text=rotation,
                 variable=self.rotations_key,
@@ -203,7 +203,7 @@ class DmsView(tk.Frame):
             ).grid(sticky="w", column=0, row=row)
 
         transform_row += 1
-        frame = tk.Frame(master=transform_frame,)
+        frame = ttk.Frame(master=transform_frame,)
         frame.grid(
             sticky="ew",
             column=0, row=transform_row,
@@ -216,7 +216,7 @@ class DmsView(tk.Frame):
         row += 1
         self.generate_transform_preview = tk.IntVar(master=self, value=1)
         col = 0
-        tk.Checkbutton(
+        ttk.Checkbutton(
             frame,
             text="Generate preview of transformed copy",
             variable=self.generate_transform_preview,
@@ -258,7 +258,7 @@ class DmsView(tk.Frame):
 
     def draw_select_buttons(self, row: int) -> None:
         """Draw the select DMS button."""
-        frame = tk.Frame(master=self)
+        frame = ttk.Frame(master=self)
         frame.grid(
             sticky="ew",
             column=0, row=row,

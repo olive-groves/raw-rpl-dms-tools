@@ -12,7 +12,7 @@ from raw_rpl_dms_tools.metadata import TITLE, SUMMARY, VERSION, HOMEPAGE, LICENS
 from raw_rpl_dms_tools.tk_utilities import Tooltip
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     """Application frame with header and footer."""
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -58,13 +58,14 @@ class App(tk.Frame):
         self.set_tab(self.tab.get())
 
         row += 1
-        tk.Label(
+        ttk.Label(
             master=self,
             text="<3",
         ).grid(
             pady=4,
             row=row,
-            column=col, sticky="nsew",
+            column=col,
+            sticky="",  # Center in grid
         )
 
         self.grid_rowconfigure(row, weight=1)  # Everything to the top
@@ -74,7 +75,7 @@ class App(tk.Frame):
         """Draw the header of the app with the title and the About button."""
         col = -1
 
-        frame = tk.Frame(master=self)
+        frame = ttk.Frame(master=self)
         frame.grid(
             sticky="ew",
             column=0, row=row,
@@ -84,7 +85,7 @@ class App(tk.Frame):
         frame.grid_columnconfigure(0, weight=1)
 
         col += 1
-        tabbar = tk.Frame(master=frame)
+        tabbar = ttk.Frame(master=frame)
         tabbar.grid(
             sticky="ns",
             row=0,
@@ -98,7 +99,7 @@ class App(tk.Frame):
         tab_col = -1
         for i, tab in enumerate(self.tabs.keys()):
             tab_col += 1
-            tk.Radiobutton(
+            ttk.Radiobutton(
                 tabbar,
                 text=tab,
                 variable=self.tab,
@@ -124,7 +125,7 @@ class App(tk.Frame):
     def set_tab(self, tab: str) -> None:
         """Set the activate tab using its key from self.tabs."""
         for key, value in self.tabs.items():
-            widget: tk.Frame | None = value.get("widget", None)
+            widget: ttk.Frame | None = value.get("widget", None)
             if not widget:
                 raise ValueError(f"Tab widget not specified for self.tabs['{key}'].")
             if key == tab:
