@@ -57,18 +57,7 @@ class App(ttk.Frame):
         )
         self.set_tab(self.tab.get())
 
-        row += 1
-        ttk.Label(
-            master=self,
-            text="<3",
-        ).grid(
-            pady=4,
-            row=row,
-            column=col,
-            sticky="",  # Center in grid
-        )
-
-        self.grid_rowconfigure(row, weight=1)  # Everything to the top
+        self.grid_rowconfigure(row + 1, weight=1)  # Everything to the top
         self.grid_columnconfigure(col, weight=1)
 
     def draw_header(self, row: int) -> None:

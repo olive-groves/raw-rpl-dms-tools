@@ -1,6 +1,5 @@
 """Test script."""
 
-import tkinter as tk
 from pathlib import Path
 
 from maxrf4u_lite.storage import make_raw_preview, rot90_raw_rpl

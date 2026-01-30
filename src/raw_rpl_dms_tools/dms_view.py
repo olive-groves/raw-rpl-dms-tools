@@ -9,8 +9,14 @@ from tkinter import messagebox
 from tkinter import filedialog
 
 from raw_rpl_dms_tools.dms_model import DmsModel, PathOrNone
-from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText
+from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText, ModalLoadingDialog
 from raw_rpl_dms_tools.metadata import TITLE
+from raw_rpl_dms_tools.icon import set_window_icon
+
+
+def s(n: int) -> str:
+    """Return 's' if multiple or zero, else ''."""
+    return "" if n == 1 else "s"
 
 
 class DmsView(ttk.Frame):
@@ -42,13 +48,13 @@ class DmsView(ttk.Frame):
 
         row = -1
 
-        # Draw Select buttons
+        # Draw Select button
         row += 1
-        self.draw_select_buttons(row=row)
+        self.draw_select(row=row)
 
-        # Draw Generate preview button
+        # Draw Extract elemental distribution images button
         row += 1
-        self.draw_preview_button(row=row)
+        self.draw_extract(row=row)
 
         # Draw Separator
         row += 1
@@ -61,55 +67,51 @@ class DmsView(ttk.Frame):
 
         # Draw Rotation
         row += 1
-        self.draw_transform_buttons(row=row)
+        self.draw_transform(row=row)
 
         self.grid_rowconfigure(row, weight=1)
 
-    def select_raw_via_dialog(self) -> None:
-        """Trigger an Open File dialog to select and set the RAW filepath."""
-        if existing_path := self.model.raw_filepath:
+    def select_dms_via_dialog(self) -> None:
+        """Trigger an Open File dialog to select and set the DMS filepath."""
+        if existing_path := self.model.dms_filepath:
             initial_path = str(existing_path)
         else:
             initial_path = ""
 
-        file = self.open_file_dialog(initial_path, "Select RAW file")
+        file = self.open_file_dialog(
+            initial_path,
+            "Select DMS file",
+            [("DMS Files", "*.dms")]
+        )
 
         if file:
-            self.set_raw_filepath(Path(file))
-            self.generate_preview_listener(None)
-
-        return
-
-    def select_rpl_via_dialog(self) -> None:
-        """Trigger an Open File dialog to select and set the RPL filepath."""
-        if existing_path := self.model.rpl_filepath:
-            initial_path = str(existing_path)
-        else:
-            initial_path = ""
-
-        file = self.open_file_dialog(initial_path, "Select RPL file")
-
-        if file:
-            self.set_rpl_filepath(Path(file))
-            self.generate_preview_listener(None)
+            self.set_dms_filepath(Path(file))
+            self.extract_listener(names=[], paths=[])
 
         return
 
     def open_file_dialog(
         self,
         initial_path: str = "",
-        title: str = "Select file"
+        title: str = "Select file",
+        filetypes: list[tuple[str, str]] | None = None,
+        show_all: bool = True,
     ) -> str:
         """Trigger 'Open file' dialog with optional initial path."""
+        if filetypes is None:
+            filetypes = []
+        if show_all:
+            filetypes.append(("All Files", "*"))
         file = filedialog.askopenfilename(
             title=title,
             multiple=False,  # type: ignore
             initialdir=initial_path,
+            filetypes=filetypes,
         )
         return file
 
-    def draw_preview_button(self, row: int) -> None:
-        """Draw the generate preview button."""
+    def draw_extract(self, row: int) -> None:
+        """Draw the extract elemental distribution images widgets."""
         frame = ttk.Frame(master=self)
         frame.grid(
             sticky="ew",
@@ -130,14 +132,14 @@ class DmsView(ttk.Frame):
             column=col, row=row,
             padx=0, pady=0,
         )
-        self.generate_preview_label = label
+        self.extract_label = label
 
         col = 1
-        text = "Generate Preview Image"
+        text = "Extract Images"
         button = ttk.Button(
             frame,
             text=text,
-            command=self.generate_preview,
+            command=self.extract,
         )
         button.grid(
             sticky="we",
@@ -147,13 +149,13 @@ class DmsView(ttk.Frame):
         Tooltip(
             button,
             text=(
-                "Create a PNG preview image from the RAW-RPL pair and save as "
-                "<raw_filename>.preview.png."
+                "Extract the elemental distribution images from the DMS and save each "
+                "as <dms_filename>_<elemental name>.png."
             )
         )
         return
 
-    def draw_transform_buttons(self, row: int) -> None:
+    def draw_transform(self, row: int) -> None:
         """Draw the transform frame and rotate subframe."""
         transform_frame = ttk.Frame(master=self)
         transform_frame.grid(
@@ -198,7 +200,6 @@ class DmsView(ttk.Frame):
                         "rotate_turns",
                         self.rotations[k.get()]["turns"],
                     ),
-                    print(k.get()),
                 ],
             ).grid(sticky="w", column=0, row=row)
 
@@ -214,21 +215,29 @@ class DmsView(ttk.Frame):
         row = -1
 
         row += 1
-        self.generate_transform_preview = tk.IntVar(master=self, value=1)
+        self.extract_transform_preview = tk.IntVar(master=self, value=1)
         col = 0
-        ttk.Checkbutton(
+        checkbutton = ttk.Checkbutton(
             frame,
-            text="Generate preview of transformed copy",
-            variable=self.generate_transform_preview,
+            text="Extract images from transformed copy",
+            variable=self.extract_transform_preview,
             onvalue=1,
             offvalue=0,
-            command=lambda g=self.generate_transform_preview: [],
-        ).grid(
+            command=lambda g=self.extract_transform_preview: [],
+        )
+        checkbutton.grid(
             sticky="w",
             row=row,
             column=0,
             columnspan=2,
             padx=0, pady=0,
+        )
+        Tooltip(
+            checkbutton,
+            text=(
+                "Extract the elemental distribution images from the transformed DMS and"
+                "save each as <transformed_dms_filename>_<elemental name>.png."
+            )
         )
 
         row += 1
@@ -246,8 +255,8 @@ class DmsView(ttk.Frame):
         button = ttk.Button(
             frame,
             text=text,
-            command=lambda p=self.generate_transform_preview: [
-                self.transform_and_save_copy(preview=bool(p.get())),
+            command=lambda p=self.extract_transform_preview: [
+                self.transform_and_save_copy(extract=bool(p.get())),
             ]
         )
         button.grid(
@@ -256,7 +265,7 @@ class DmsView(ttk.Frame):
             padx=0, pady=self._pad,
         )
 
-    def draw_select_buttons(self, row: int) -> None:
+    def draw_select(self, row: int) -> None:
         """Draw the select DMS button."""
         frame = ttk.Frame(master=self)
         frame.grid(
@@ -277,7 +286,7 @@ class DmsView(ttk.Frame):
         button = ttk.Button(
             frame,
             text=text,
-            command=self.select_raw_via_dialog,
+            command=self.select_dms_via_dialog,
         )
         button.grid(
             sticky="we",
@@ -292,7 +301,7 @@ class DmsView(ttk.Frame):
             column=col, row=row,
             padx=0, pady=0,
         )
-        self.raw_label = label
+        self.dms_label = label
 
         return
 
@@ -309,29 +318,16 @@ class DmsView(ttk.Frame):
             property_.fset(instance, None)
         return
 
-    def raw_filepath_listener(self, path: Path) -> None:
-        """Listener for raw_filepath."""
+    def dms_filepath_listener(self, path: Path) -> None:
+        """Listener for dms_filepath."""
         text = str(path or "")
-        self.raw_label.set_text(text=text)
+        self.dms_label.set_text(text=text)
         return
 
-    def set_raw_filepath(self, path: PathOrNone) -> None:
-        """Set the RAW filepath of the model."""
+    def set_dms_filepath(self, path: PathOrNone) -> None:
+        """Set the DMS filepath of the model."""
         self._set_path(
-            property_=DmsModel.raw_filepath,
-            path=path,
-        )
-
-    def rpl_filepath_listener(self, path: Path) -> None:
-        """Listener for rpl_filepath."""
-        text = str(path or "")
-        self.rpl_label.set_text(text=text)
-        return
-
-    def set_rpl_filepath(self, path: PathOrNone) -> None:
-        """Set the RPL filepath of the model."""
-        self._set_path(
-            property_=DmsModel.rpl_filepath,
+            property_=DmsModel.dms_filepath,
             path=path,
         )
 
@@ -339,58 +335,111 @@ class DmsView(ttk.Frame):
         """Listener for DmsModel.rotate_turns."""
         return
 
-    def generate_preview_listener(self, path: PathOrNone) -> None:
-        """Listener for DmsModel.generate_preview."""
-        text = str(path or "")
-        self.generate_preview_label.set_text(text=text)
+    def extract_listener(self, names: list[str], paths: list[Path]) -> None:
+        """Listener for DmsModel.extract."""
+        if names:
+            n = len(names)
+            text = f"({n}) " + ", ".join(names)
+        else:
+            text = ""
+        self.extract_label.set_text(text=text)
         return
 
-    def generate_preview(self) -> PathOrNone:
-        """Generate a preview with the model."""
-        filepath = None
+    def extract(self) ->  tuple[list[str], list[Path]]:
+        """Extract the elemental distribution images with the model."""
+        names = []
+        paths = []
+
+        dialog = set_window_icon(
+            ModalLoadingDialog(master=self, text="Extracting from DMS...")
+        )
+        dialog.update()  # Works, but I really should multi-thread with root.after()...
         try:
-            filepath = self.model.generate_preview()
+            names, paths = self.model.extract()
         except Exception as error:
             message = f"Error while generating preview:\n\n{str(error)}"
             messagebox.showerror(TITLE, message,)
+            self.extract_label.set_text("")
         else:
-            message = f"Preview generated:\n\n{filepath}"
+            n = len(names)
+            message = (
+                f"{n} elemental distribution image{s(n)} extracted:\n\n"
+                f"{'\n'.join(str(path) for path in paths)}"
+            )
             messagebox.showinfo(TITLE, message,)
-        return filepath
+        finally:
+            dialog.destroy()
+
+        return names, paths
 
     def transform_and_save_copy(
         self,
-        preview: bool = True,
-    ) -> tuple[PathOrNone, PathOrNone, PathOrNone]:
-        """Transform and save a RAW-RPL copy with an optional preview with the model."""
-        raw_tr: PathOrNone = None
-        rpl_tr: PathOrNone = None
-        preview_tr: PathOrNone = None
-        try:
-            raw_tr, rpl_tr = self.model.transform_and_save_copy()
-        except Exception as error:
-            message = f"Error while transforming and saving RAW-RPL:\n\n{str(error)}"
-            messagebox.showerror(TITLE, message,)
-            return raw_tr, rpl_tr, preview_tr
-        else:
-            message = f"Transformed RAW-RPL saved:\n\n{raw_tr}\n{rpl_tr}"
-            messagebox.showinfo(TITLE, message,)
+        extract: bool = True,
+    ) -> tuple[PathOrNone, list[Path]]:
+        """Transform and save a DMS copy with an optional extraction."""
+        dms_tr: PathOrNone = None
+        extract_tr: list[Path] = []
 
-        if preview:
+        dialog = set_window_icon(
+            ModalLoadingDialog(master=self, text="Transforming and saving DMS...")
+        )
+        dialog.update()
+        try:
+            dms_tr = self.model.transform_and_save_copy()
+        except Exception as error:
+            message = f"Error while transforming and saving DMS:\n\n{str(error)}"
+            messagebox.showerror(TITLE, message,)
+            self.transform_and_save_copy_listener(dms_tr, extract_tr)
+            return dms_tr, extract_tr
+        else:
+            message = f"Transformed DMS saved:\n\n{dms_tr}"
+            messagebox.showinfo(TITLE, message,)
+        finally:
+            dialog.destroy()
+
+        if extract:
+            dialog = set_window_icon(
+                ModalLoadingDialog(
+                    master=self,
+                    text="Extracting from transformed DMS..."
+                )
+            )
+            dialog.update()
             try:
                 model = DmsModel()
-                model.raw_filepath = raw_tr
-                model.rpl_filepath = rpl_tr
-                preview_tr = model.generate_preview()
+                model.dms_filepath = dms_tr
+                _, extract_tr = model.extract()
             except Exception as error:
                 message = (
-                    "Error while generating preview of transformed RAW-RPL:\n\n"
+                    "Error while extracting images from transformed DMS:\n\n"
                     f"{str(error)}"
                 )
                 messagebox.showerror(TITLE, message,)
-                return raw_tr, rpl_tr, preview_tr
+                self.transform_and_save_copy_listener(dms_tr, extract_tr)
+                return dms_tr, extract_tr
             else:
-                message = f"Preview of transformed RAW-RPL generated:\n\n{preview_tr}"
+                message = (
+                    "Images from transformed DMS extracted:\n\n"
+                    f"{'\n'.join(str(path) for path in extract_tr)}"
+                )
                 messagebox.showinfo(TITLE, message,)
+            finally:
+                dialog.destroy()
 
-        return raw_tr, rpl_tr, preview_tr
+        self.transform_and_save_copy_listener(dms_tr, extract_tr)
+        return dms_tr, extract_tr
+
+    def transform_and_save_copy_listener(
+        self,
+        dms: PathOrNone,
+        extract: list[Path],
+    ) -> None:
+        """Listener for self.transform_and_save_copy."""
+        text: str = ""
+        if dms:
+            text = f"{dms.name}"
+            if extract:
+                text += f", ({len(extract)}) {''.join(extract[0].suffixes)}"
+
+        self.transform_label.set_text(text)
+        return

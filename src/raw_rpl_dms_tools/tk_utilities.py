@@ -61,26 +61,28 @@ class Tooltip:
         self.id = None
         self.tw = None
 
-    def onEnter(self, event=None):
+    def onEnter(self, event=None) -> None:
         self.schedule()
 
-    def onLeave(self, event=None):
+    def onLeave(self, event=None) -> None:
         self.unschedule()
         self.hide()
 
-    def schedule(self):
+    def schedule(self) -> None:
         self.unschedule()
         self.id = self.widget.after(self.waittime, self.show)
 
-    def unschedule(self):
+    def unschedule(self) -> None:
         id_ = self.id
         self.id = None
         if id_:
             self.widget.after_cancel(id_)
 
-    def show(self):
+    def show(self) -> None:
+        """Show."""
         def tip_pos_calculator(
-            widget, label, *, tip_delta=(10, 5), pad=(5, 3, 5, 3)):
+            widget, label, *, tip_delta=(10, 5), pad=(5, 3, 5, 3)
+        ) -> tuple[int, int]:
 
             w = widget
 
@@ -134,27 +136,34 @@ class Tooltip:
         # Leaves only the label and removes the app window
         self.tw.wm_overrideredirect(True)
 
-        win = tk.Frame(self.tw,
-                       background=bg,
-                       borderwidth=0)
-        label = tk.Label(win,
-                          text=self.text,
-                          justify=tk.LEFT,
-                          background=bg,
-                          relief=tk.SOLID,
-                          borderwidth=0,
-                          wraplength=self.wraplength)
+        win = tk.Frame(
+            self.tw,
+            background=bg,
+            borderwidth=0,
+        )
+        label = tk.Label(
+            win,
+            text=self.text,
+            justify=tk.LEFT,
+            background=bg,
+            relief=tk.SOLID,
+            borderwidth=0,
+            wraplength=self.wraplength
+        )
 
-        label.grid(padx=(pad[0], pad[2]),
-                   pady=(pad[1], pad[3]),
-                   sticky=tk.NSEW)
+        label.grid(
+            padx=(pad[0], pad[2]),
+            pady=(pad[1], pad[3]),
+            sticky=tk.NSEW,
+        )
         win.grid()
 
         x, y = tip_pos_calculator(widget, label)
 
         self.tw.wm_geometry("+%d+%d" % (x, y))
 
-    def hide(self):
+    def hide(self) -> None:
+        """Hide."""
         tw = self.tw
         if tw:
             tw.destroy()
@@ -183,8 +192,58 @@ class LabelText(tk.Text):
         self.tag_configure('tag-justify', justify=justify)
         self.configure(cursor="arrow")  # No mouse cursor
 
-    def set_text(self, text: str):
+    def set_text(self, text: str) -> None:
+        """Set the text."""
         self.configure(state="normal")
         self.delete(1.0, "end")
         self.insert(1.0, text, 'tag-justify')
         self.configure(state="disabled")
+
+
+class ModalDialog(tk.Toplevel):
+    """Modal dialog window that takes full application focus.
+
+    ```
+    window = tk.Tk()
+    window.protocol("WM_DELETE_WINDOW", parent.destroy)
+    dialog = ModalDialog(window)
+    dialog.grid_rowconfigure(index=0, weight=1)
+    dialog.grid_columnconfigure(index=0, weight=1)
+    tk.Label(dialog, text="Loading...").grid(row=0, column=0)
+    window.after(ms=2 * 1000, func=dialog.destroy)
+    ```
+    """
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        geometry: str = f"+{self.master.winfo_rootx()}+{self.master.winfo_rootx()}"
+        self.geometry(geometry)  # Set to root position
+        self.transient(kwargs.get("master"))
+        self.title("Dialog")
+        self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", self.destroy)
+
+
+class ModalLoadingDialog(ModalDialog):
+    """Convenience ModalDialog with an indeterminate ttk.Progressbar and text."""
+    def __init__(
+        self,
+        *args,
+        text: str = "Loading...",
+        auto_start: bool = True,
+        **kwargs
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        pad: tuple[int, int] = (5, 5)
+        self.grid_rowconfigure(index=0, weight=1)
+        self.grid_columnconfigure(index=0, weight=1)
+        self.grid_columnconfigure(index=1, weight=1)
+        self.label = ttk.Label(master=self, text=text)
+        self.label.grid(row=0, column=0, sticky="e", padx=pad, pady=pad)
+        self.progressbar = ttk.Progressbar(master=self, mode="indeterminate")
+        self.progressbar.grid(row=0, column=1, sticky="w", padx=pad, pady=pad)
+        if auto_start:
+            self.start()
+
+    def start(self, interval: int = 10) -> None:
+        """Start the progressbar."""
+        self.progressbar.start(interval=interval)

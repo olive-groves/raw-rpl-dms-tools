@@ -522,7 +522,7 @@ def split_dms_header_dimensions(line: bytes) -> tuple[bytes, bytes, bytes]:
     )
     if not match:
         raise ValueError(
-            "Line does not match " \
+            "Line does not match "
             "'<whitespace><num><whitespace><num><whitespace><num><suffix>'"
         )
     return match.groups()  # type: ignore - Regex match logically must return three.

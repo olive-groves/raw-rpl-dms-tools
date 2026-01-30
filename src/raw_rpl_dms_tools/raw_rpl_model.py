@@ -9,7 +9,7 @@ PathOrNone = Path | None
 
 
 class RawRplModel(Signaler):
-    """maxrf4u_lite functions bundled as a model."""
+    """maxrf4u_lite RAW-RPL functions bundled as a model."""
     def __init__(self) -> None:
         super().__init__()
         self.observers = []

@@ -9,8 +9,9 @@ from tkinter import messagebox
 from tkinter import filedialog
 
 from raw_rpl_dms_tools.raw_rpl_model import RawRplModel, PathOrNone
-from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText
+from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText, ModalLoadingDialog
 from raw_rpl_dms_tools.metadata import TITLE
+from raw_rpl_dms_tools.icon import set_window_icon
 
 
 class RawRplView(ttk.Frame):
@@ -72,7 +73,11 @@ class RawRplView(ttk.Frame):
         else:
             initial_path = ""
 
-        file = self.open_file_dialog(initial_path, "Select RAW file")
+        file = self.open_file_dialog(
+            initial_path,
+            "Select RAW file",
+            [("RAW Files", "*.raw")],
+        )
 
         if file:
             self.set_raw_filepath(Path(file))
@@ -87,7 +92,11 @@ class RawRplView(ttk.Frame):
         else:
             initial_path = ""
 
-        file = self.open_file_dialog(initial_path, "Select RPL file")
+        file = self.open_file_dialog(
+            initial_path,
+            "Select RPL file",
+            [("RPL Files", "*.rpl")],
+        )
 
         if file:
             self.set_rpl_filepath(Path(file))
@@ -98,13 +107,20 @@ class RawRplView(ttk.Frame):
     def open_file_dialog(
         self,
         initial_path: str = "",
-        title: str = "Select file"
+        title: str = "Select file",
+        filetypes: list[tuple[str, str]] | None = None,
+        show_all: bool = True,
     ) -> str:
         """Trigger 'Open file' dialog with optional initial path."""
+        if filetypes is None:
+            filetypes = []
+        if show_all:
+            filetypes.append(("All Files", "*"))
         file = filedialog.askopenfilename(
             title=title,
             multiple=False,  # type: ignore
             initialdir=initial_path,
+            filetypes=filetypes,
         )
         return file
 
@@ -198,7 +214,6 @@ class RawRplView(ttk.Frame):
                         "rotate_turns",
                         self.rotations[k.get()]["turns"],
                     ),
-                    print(k.get()),
                 ],
             ).grid(sticky="w", column=0, row=row)
 
@@ -216,19 +231,27 @@ class RawRplView(ttk.Frame):
         row += 1
         self.generate_transform_preview = tk.IntVar(master=self, value=1)
         col = 0
-        ttk.Checkbutton(
+        checkbutton = ttk.Checkbutton(
             frame,
             text="Generate preview of transformed copy",
             variable=self.generate_transform_preview,
             onvalue=1,
             offvalue=0,
             command=lambda g=self.generate_transform_preview: [],
-        ).grid(
+        )
+        checkbutton.grid(
             sticky="w",
             row=row,
             column=0,
             columnspan=2,
             padx=0, pady=0,
+        )
+        Tooltip(
+            checkbutton,
+            text=(
+                "Generate a preview image of the transformed RAW-RPL and save as "
+                "<transformed_raw_filename>.preview.png."
+            )
         )
 
         row += 1
@@ -368,22 +391,47 @@ class RawRplView(ttk.Frame):
 
     def generate_preview_listener(self, path: PathOrNone) -> None:
         """Listener for RawRplModel.generate_preview."""
-        text = str(path or "")
+        text = path.name if path else ""
         self.generate_preview_label.set_text(text=text)
         return
 
     def generate_preview(self) -> PathOrNone:
         """Generate a preview with the model."""
         filepath = None
+
+        dialog = set_window_icon(
+            ModalLoadingDialog(master=self, text="Generating preview from RAW-RPL...")
+        )
+        dialog.update()  # Works, but I really should multi-thread with root.after()...
         try:
             filepath = self.model.generate_preview()
         except Exception as error:
             message = f"Error while generating preview:\n\n{str(error)}"
             messagebox.showerror(TITLE, message,)
+            self.generate_preview_label.set_text("")
         else:
             message = f"Preview generated:\n\n{filepath}"
             messagebox.showinfo(TITLE, message,)
+        finally:
+            dialog.destroy()
+
         return filepath
+
+    def transform_and_save_copy_listener(
+        self,
+        raw: PathOrNone,
+        rpl: PathOrNone,
+        preview: PathOrNone,
+    ) -> None:
+        """Listener for self.transform_and_save_copy."""
+        text: str = ""
+        if raw and rpl:
+            text = f"{raw.name}, {''.join(rpl.suffixes)}"
+            if preview:
+                text += f", {''.join(preview.suffixes)}"
+
+        self.transform_label.set_text(text)
+        return
 
     def transform_and_save_copy(
         self,
@@ -393,17 +441,32 @@ class RawRplView(ttk.Frame):
         raw_tr: PathOrNone = None
         rpl_tr: PathOrNone = None
         preview_tr: PathOrNone = None
+
+        dialog = set_window_icon(
+            ModalLoadingDialog(master=self, text="Transforming and saving RAW-RPL...")
+        )
+        dialog.update()
         try:
             raw_tr, rpl_tr = self.model.transform_and_save_copy()
         except Exception as error:
             message = f"Error while transforming and saving RAW-RPL:\n\n{str(error)}"
             messagebox.showerror(TITLE, message,)
+            self.transform_and_save_copy_listener(raw_tr, rpl_tr, preview_tr)
             return raw_tr, rpl_tr, preview_tr
         else:
             message = f"Transformed RAW-RPL saved:\n\n{raw_tr}\n{rpl_tr}"
             messagebox.showinfo(TITLE, message,)
+        finally:
+            dialog.destroy()
 
         if preview:
+            dialog = set_window_icon(
+                ModalLoadingDialog(
+                    master=self,
+                    text="Generating preview of transformed RAW-RPL..."
+                )
+            )
+            dialog.update()
             try:
                 model = RawRplModel()
                 model.raw_filepath = raw_tr
@@ -415,9 +478,14 @@ class RawRplView(ttk.Frame):
                     f"{str(error)}"
                 )
                 messagebox.showerror(TITLE, message,)
+                self.transform_and_save_copy_listener(raw_tr, rpl_tr, preview_tr)
                 return raw_tr, rpl_tr, preview_tr
             else:
                 message = f"Preview of transformed RAW-RPL generated:\n\n{preview_tr}"
                 messagebox.showinfo(TITLE, message,)
+            finally:
+                dialog.destroy()
+
+        self.transform_and_save_copy_listener(raw_tr, rpl_tr, preview_tr)
 
         return raw_tr, rpl_tr, preview_tr
