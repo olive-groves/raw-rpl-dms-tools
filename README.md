@@ -42,7 +42,7 @@ For macOS, RAW-RPL DMS Tools installs to your computer with an app file which yo
 
 1. [Download the latest macOS version](https://github.com/olive-groves/raw-rpl-dms-tools/releases/latest) under `raw-rpl-dms-tools_vx.y.z_macOS.app.zip`
 
-2. In Finder, extract `raw-rpl-dms-tools_vx.y.z_macOS.app.exe` from the ZIP.
+2. In Finder, extract `raw-rpl-dms-tools_vx.y.z_macOS.app` from the ZIP.
 
 3. Drag `RAW-RPL DMS Tools` into Applications.
 
