@@ -5,6 +5,7 @@ from os import path
 # from pathlib import Path
 from platform import system
 import tkinter as tk
+from tkinter import PhotoImage
 
 from raw_rpl_dms_tools.metadata import TITLE
 from raw_rpl_dms_tools.app import App
@@ -23,13 +24,17 @@ def main() -> None:
     platformD = system()
     icon = None
     if platformD == 'Darwin':
-        icon = 'icon.icns'
+        icon = 'icon.png'
     elif platformD == 'Windows':
         icon = 'icon.ico'
     if icon:
         try:
             icon_path = path.abspath(path.join(path.dirname(__file__), icon))
-            window.iconbitmap(default=str(icon_path))
+            if platformD == 'Darwin':
+                image = PhotoImage(file=icon_path)
+                window.iconphoto(True, image)
+            elif platformD == 'Windows':
+                window.iconbitmap(default=str(icon_path))
         except Exception as e:
             print(f"Unexpected error while setting icon: {e}. Continuing without icon.")
 
