@@ -264,6 +264,15 @@ class DmsView(ttk.Frame):
             column=1, row=row,
             padx=0, pady=self._pad,
         )
+        Tooltip(
+            button,
+            text=(
+                "Transform and save a copy of the DMS file as "
+                "<dms_filename>_<transform>.dms, and then (optionally) extract each of "
+                "its elemental distribution images as "
+                "<dms_filename>_<transform>_<elemental name>.png."
+            )
+        )
 
     def draw_select(self, row: int) -> None:
         """Draw the select DMS button."""

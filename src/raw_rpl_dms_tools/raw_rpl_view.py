@@ -278,6 +278,14 @@ class RawRplView(ttk.Frame):
             column=1, row=row,
             padx=0, pady=self._pad,
         )
+        Tooltip(
+            button,
+            text=(
+                "Transform and save a copy of the RAW-RPL file pair as "
+                "<filename>_<transform>.raw/rpl, and then (optionally) generate a "
+                "preview image as <raw_filename>_<transform>.preview.png."
+            )
+        )
 
     def draw_select_buttons(self, row: int) -> None:
         """Draw the select RAW and select RPL buttons."""
