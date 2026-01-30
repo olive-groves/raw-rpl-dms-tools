@@ -47,7 +47,7 @@ class Tooltip:
         pad: tuple[int, int, int, int] = (5, 3, 5, 3),
         text: str = 'widget info',
         waittime: int = 400,
-        wraplength: int = 250
+        wraplength: int = 400,
     ) -> None:
 
         self.waittime = waittime
