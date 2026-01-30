@@ -100,7 +100,7 @@ pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --i
 macOS package (TODO: Verify this!):
 ```bash
 cd src/raw_rpl_dms_tools
-pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.icns --add-data=./raw-rpl-dms-tools/src/raw_rpl_dms_tools/icon.icns:. script.py -y 
+poetry run pyinstaller --onefile --windowed --recursive-copy-metadata raw_rpl_dms_tools --icon=icon.icns --add-data=/Users/max/Developer/git/raw-rpl-tools/src/raw_rpl_dms_tools/icon.icns:. main.py -y 
 ```
 
 
