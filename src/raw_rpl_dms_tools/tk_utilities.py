@@ -223,7 +223,7 @@ class ModalDialog(tk.Toplevel):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        geometry: str = f"+{self.master.winfo_rootx()}+{self.master.winfo_rootx()}"
+        geometry: str = f"+{self.master.winfo_rootx()}+{self.master.winfo_rooty()}"
         self.geometry(geometry)  # Set to root position
         self.transient(kwargs.get("master"))
         self.title("Dialog")
