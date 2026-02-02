@@ -167,7 +167,7 @@ class DmsView(ttk.Frame):
         )
 
         transform_row += 1
-        frame = ttk.LabelFrame(master=transform_frame, text="Rotate")
+        frame = ttk.LabelFrame(master=transform_frame, text="Rotate counterclockwise")
         frame.grid(
             sticky="ew",
             column=0, row=transform_row,
