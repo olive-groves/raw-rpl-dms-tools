@@ -12,6 +12,7 @@ from raw_rpl_dms_tools.raw_rpl_model import RawRplModel, PathOrNone
 from raw_rpl_dms_tools.tk_utilities import Tooltip, LabelText, ModalLoadingDialog
 from raw_rpl_dms_tools.metadata import TITLE
 from raw_rpl_dms_tools.icon import set_window_icon
+from raw_rpl_dms_tools.transform import ROTATIONS
 
 
 class RawRplView(ttk.Frame):
@@ -23,17 +24,7 @@ class RawRplView(ttk.Frame):
 
         self._pad = (5, 5)
 
-        self.rotations = {
-            "90° left (counterclockwise)": {
-                "turns": 1,
-            },
-            "90° right (clockwise)": {
-                "turns": 3,
-            },
-            "180°": {
-                "turns": 2,
-            },
-        }
+        self.rotations = ROTATIONS
         default_turns = 1
         self.model.rotate_turns = default_turns
         rotations_key_str = next(
@@ -201,21 +192,26 @@ class RawRplView(ttk.Frame):
         frame.grid_columnconfigure(0, weight=1)
         row = -1
 
-        for rotation in self.rotations.keys():
+        for key, value in self.rotations.items():
             row += 1
-            ttk.Radiobutton(
+            radiobutton = ttk.Radiobutton(
                 frame,
-                text=rotation,
+                text=key,
                 variable=self.rotations_key,
-                value=rotation,
+                value=key,
                 command=lambda k=self.rotations_key: [
                     setattr(
                         self.model,
                         "rotate_turns",
-                        self.rotations[k.get()]["turns"],
+                        value["turns"],
                     ),
                 ],
-            ).grid(sticky="w", column=0, row=row)
+            )
+            radiobutton.grid(sticky="w", column=0, row=row)
+            Tooltip(
+                radiobutton,
+                text=f"Rotate {key}."
+            )
 
         transform_row += 1
         frame = ttk.Frame(master=transform_frame,)
