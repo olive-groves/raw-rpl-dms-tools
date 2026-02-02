@@ -76,7 +76,7 @@ poetry run python ./src/raw_rpl_dms_tools/main.py
 
 > #### `conda`
 > 
-> If you use `conda` (Anaconda), I recommend manually creating a Python environment instead of solving from `environment.yml`.
+> If you use `conda` (Anaconda), I recommend manually creating a Python environment, installing Poetry, and then letting `poetry install` do the rest.
 > 
 > Change directory to the repo root and run these commands to manually create the environment in `./env`:
 > 
